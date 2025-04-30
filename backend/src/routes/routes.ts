@@ -48,6 +48,7 @@ const models: TsoaRoute.Models = {
             "recurrenceInterval": {"dataType":"double"},
             "recurrenceEndDate": {"dataType":"datetime"},
             "parentTaskId": {"dataType":"string"},
+            "recurrenceDates": {"dataType":"array","array":{"dataType":"string"}},
             "createdAt": {"dataType":"datetime","required":true},
             "updatedAt": {"dataType":"datetime","required":true},
         },
@@ -56,7 +57,7 @@ const models: TsoaRoute.Models = {
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "Pick_Task.Exclude_keyofTask.id-or-createdAt-or-updatedAt__": {
         "dataType": "refAlias",
-        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"title":{"dataType":"string","required":true},"description":{"dataType":"string"},"priority":{"ref":"TaskPriority","required":true},"status":{"ref":"TaskStatus","required":true},"dueDate":{"dataType":"datetime"},"recurrenceType":{"ref":"RecurrenceType","required":true},"recurrenceInterval":{"dataType":"double"},"recurrenceEndDate":{"dataType":"datetime"},"parentTaskId":{"dataType":"string"}},"validators":{}},
+        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"title":{"dataType":"string","required":true},"description":{"dataType":"string"},"priority":{"ref":"TaskPriority","required":true},"status":{"ref":"TaskStatus","required":true},"dueDate":{"dataType":"datetime"},"recurrenceType":{"ref":"RecurrenceType","required":true},"recurrenceInterval":{"dataType":"double"},"recurrenceEndDate":{"dataType":"datetime"},"parentTaskId":{"dataType":"string"},"recurrenceDates":{"dataType":"array","array":{"dataType":"string"}}},"validators":{}},
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "Omit_Task.id-or-createdAt-or-updatedAt_": {
@@ -66,7 +67,7 @@ const models: TsoaRoute.Models = {
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "Partial_Omit_Task.id-or-createdAt-or-updatedAt__": {
         "dataType": "refAlias",
-        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"title":{"dataType":"string"},"description":{"dataType":"string"},"priority":{"ref":"TaskPriority"},"status":{"ref":"TaskStatus"},"dueDate":{"dataType":"datetime"},"recurrenceType":{"ref":"RecurrenceType"},"recurrenceInterval":{"dataType":"double"},"recurrenceEndDate":{"dataType":"datetime"},"parentTaskId":{"dataType":"string"}},"validators":{}},
+        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"title":{"dataType":"string"},"description":{"dataType":"string"},"priority":{"ref":"TaskPriority"},"status":{"ref":"TaskStatus"},"dueDate":{"dataType":"datetime"},"recurrenceType":{"ref":"RecurrenceType"},"recurrenceInterval":{"dataType":"double"},"recurrenceEndDate":{"dataType":"datetime"},"parentTaskId":{"dataType":"string"},"recurrenceDates":{"dataType":"array","array":{"dataType":"string"}}},"validators":{}},
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "Plant": {
@@ -470,6 +471,36 @@ export function RegisterRoutes(app: Router) {
 
               await templateService.apiHandler({
                 methodName: 'cancelTask',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsTaskController_getTaskRecurrenceDates: Record<string, TsoaRoute.ParameterSchema> = {
+                taskId: {"in":"path","name":"taskId","required":true,"dataType":"string"},
+        };
+        app.get('/tasks/:taskId/recurrence-dates',
+            ...(fetchMiddlewares<RequestHandler>(TaskController)),
+            ...(fetchMiddlewares<RequestHandler>(TaskController.prototype.getTaskRecurrenceDates)),
+
+            async function TaskController_getTaskRecurrenceDates(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsTaskController_getTaskRecurrenceDates, request, response });
+
+                const controller = new TaskController();
+
+              await templateService.apiHandler({
+                methodName: 'getTaskRecurrenceDates',
                 controller,
                 response,
                 next,

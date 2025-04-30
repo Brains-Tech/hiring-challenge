@@ -69,6 +69,12 @@
 					"parentTaskId": {
 						"type": "string"
 					},
+					"recurrenceDates": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
 					"createdAt": {
 						"type": "string",
 						"format": "date-time"
@@ -121,6 +127,12 @@
 					},
 					"parentTaskId": {
 						"type": "string"
+					},
+					"recurrenceDates": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
 					}
 				},
 				"required": [
@@ -167,6 +179,12 @@
 					},
 					"parentTaskId": {
 						"type": "string"
+					},
+					"recurrenceDates": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
 					}
 				},
 				"type": "object",
@@ -951,6 +969,41 @@
 						}
 					}
 				},
+				"tags": [
+					"Tasks"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "taskId",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/tasks/{taskId}/recurrence-dates": {
+			"get": {
+				"operationId": "GetTaskRecurrenceDates",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"type": "string"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"description": "Obtém todas as ocorrências de uma tarefa recorrente",
 				"tags": [
 					"Tasks"
 				],
