@@ -144,7 +144,6 @@ export const equipmentApi = {
   update: (id: string, data: Partial<Omit<Equipment, 'id' | 'createdAt' | 'updatedAt' | 'areaRelations'>>) =>
     api.put<Equipment>(`/equipment/${id}`, data),
   delete: (id: string) => api.delete(`/equipment/${id}`),
-  
   // Métodos para múltiplas áreas
   getEquipmentAreas: (equipmentId: string) => 
     api.get<Area[]>(`/equipment/${equipmentId}/areas`),
@@ -163,4 +162,45 @@ export const partApi = {
   update: (id: string, data: Partial<Omit<Part, 'id' | 'createdAt' | 'updatedAt'>>) =>
     api.put<Part>(`/parts/${id}`, data),
   delete: (id: string) => api.delete(`/parts/${id}`),
+  getByEquipment: (equipmentId: string) => api.get<Part[]>(`/parts/equipment/${equipmentId}`),
+};
+
+// Interface para Task
+export interface Task {
+  id: string;
+  title: string;
+  description?: string;
+  priority: TaskPriority;
+  status: TaskStatus;
+  dueDate?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Enums para Task
+export enum TaskPriority {
+  LOW = "low",
+  MEDIUM = "medium",
+  HIGH = "high"
+}
+
+export enum TaskStatus {
+  TODO = "todo",
+  IN_PROGRESS = "in_progress",
+  COMPLETED = "completed",
+  CANCELED = "canceled"
+}
+
+// API client para tarefas
+export const taskApi = {
+  getAll: (params?: any) => api.get<Task[]>('/tasks', { params }),
+  getById: (id: string) => api.get<Task>(`/tasks/${id}`),
+  create: (data: Omit<Task, "id" | "createdAt" | "updatedAt">) => 
+      api.post<Task>('/tasks', data),
+  update: (id: string, data: Partial<Omit<Task, "id" | "createdAt" | "updatedAt">>) =>
+      api.put<Task>(`/tasks/${id}`, data),
+  delete: (id: string) => api.delete(`/tasks/${id}`),
+  complete: (id: string) => api.post<Task>(`/tasks/${id}/complete`),
+  start: (id: string) => api.post<Task>(`/tasks/${id}/start`),
+  cancel: (id: string) => api.post<Task>(`/tasks/${id}/cancel`),
 };

@@ -1,12 +1,13 @@
 import React from "react";
 import { Layout, Menu } from "antd";
 import { usePathname, useRouter } from "next/navigation";
-import Image from "next/image";
 import {
   HomeOutlined,
   AppstoreOutlined,
   ToolOutlined,
   SettingOutlined,
+  CheckCircleOutlined,
+  CalendarOutlined,
 } from "@ant-design/icons";
 
 const { Header, Content, Sider } = Layout;
@@ -45,6 +46,11 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       icon: <SettingOutlined />,
       label: "Parts",
     },
+    {
+      key: "/tasks",
+      icon: <CheckCircleOutlined />,
+      label: "Tarefas",
+    }
   ];
 
   return (
@@ -73,7 +79,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         <Sider width={200} style={{ background: "#073b67" }}>
           <Menu
             mode="inline"
-            selectedKeys={[pathname]}
+            selectedKeys={[pathname || "/"]}
             style={{ height: "100%", borderRight: 0, background: "#073b67" }}
             items={menuItems}
             onClick={({ key }) => router.push(key)}

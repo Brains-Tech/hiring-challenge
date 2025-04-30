@@ -5,13 +5,23 @@ import { Equipment } from "../models/Equipment";
 import { Part } from "../models/Part";
 import { AreaNeighbor } from "../models/AreaNeighbor";
 import { EquipmentArea } from "../models/EquipmentArea";
+import { Task } from "../models/Task";
 
 export const AppDataSource = new DataSource({
     type: "sqlite",
     database: "opwell.sqlite",
     synchronize: true, // Set to false in production
     logging: true,
-    entities: [Plant, Area, Equipment, Part, AreaNeighbor, EquipmentArea],
+    entities: [
+        Plant, 
+        Area, 
+        Equipment, 
+        Part, 
+        AreaNeighbor, 
+        EquipmentArea, 
+        Task
+
+    ],
     migrations: [],
     subscribers: [],
 }); 
