@@ -196,51 +196,19 @@ export class TaskService {
 
     public async update(id: string, data: Partial<Omit<Task, "id" | "createdAt" | "updatedAt">>): Promise<Task> {
         const task = await this.findById(id);
-
+    
         try {
-            if (
-                (data.recurrenceType && data.recurrenceType !== task.recurrenceType) ||
-                (data.recurrenceInterval && data.recurrenceInterval !== task.recurrenceInterval) ||
-                (data.recurrenceEndDate && !task.recurrenceEndDate) ||
-                (task.recurrenceEndDate && data.recurrenceEndDate && 
-                 dayjs(data.recurrenceEndDate).format('YYYY-MM-DD') !== dayjs(task.recurrenceEndDate).format('YYYY-MM-DD')) ||
-                (data.dueDate && task.dueDate && 
-                 dayjs(data.dueDate).format('YYYY-MM-DD') !== dayjs(task.dueDate).format('YYYY-MM-DD'))
-            ) {
-                if (data.recurrenceType === RecurrenceType.NONE) {
-                    if (data.dueDate) {
-                        data.recurrenceDates = [dayjs(data.dueDate).format('YYYY-MM-DD')];
-                    } else if (task.dueDate) {
-                        data.recurrenceDates = [dayjs(task.dueDate).format('YYYY-MM-DD')];
-                    } else {
-                        data.recurrenceDates = undefined;
-                    }
-                } else {
-                    const startDate = data.dueDate || task.dueDate;
-                    if (startDate) {
-                        const recType = data.recurrenceType || task.recurrenceType;
-                        const recInterval = data.recurrenceInterval || task.recurrenceInterval || 1;
-                        const recEndDate = data.recurrenceEndDate || task.recurrenceEndDate;
-                        
-                        data.recurrenceDates = this.generateOccurrenceDates(
-                            startDate,
-                            recType,
-                            recInterval,
-                            recEndDate
-                        );
-                    }
-                }
+            // Verificar se precisamos recalcular datas de recorrência
+            if (this.shouldRecalculateRecurrenceDates(task, data)) {
+                this.updateRecurrenceDates(task, data);
             }
             
-            if (
-                task.recurrenceType !== RecurrenceType.NONE && 
-                data.recurrenceType !== undefined
-            ) {
-                if (data.title || data.description || data.priority) {
-                    await this.updateFutureOccurrences(task, data);
-                }
+            // Atualizar ocorrências futuras se necessário
+            if (this.shouldUpdateFutureOccurrences(task, data)) {
+                await this.updateFutureOccurrences(task, data);
             }
             
+            // Aplicar atualizações
             Object.assign(task, data);
             task.updatedAt = new Date();
             
@@ -251,6 +219,108 @@ export class TaskService {
             }
             throw error;
         }
+    }
+    
+    /**
+     * Verifica se é necessário recalcular as datas de recorrência
+     * baseado nas mudanças realizadas
+     */
+    private shouldRecalculateRecurrenceDates(task: Task, data: Partial<Task>): boolean {
+        // Mudança no tipo de recorrência
+        if (data.recurrenceType && data.recurrenceType !== task.recurrenceType) {
+            return true;
+        }
+        
+        // Mudança no intervalo de recorrência
+        if (data.recurrenceInterval && data.recurrenceInterval !== task.recurrenceInterval) {
+            return true;
+        }
+        
+        // Adição de data final de recorrência
+        if (data.recurrenceEndDate && !task.recurrenceEndDate) {
+            return true;
+        }
+        
+        // Mudança na data final de recorrência
+        if (task.recurrenceEndDate && data.recurrenceEndDate && 
+            dayjs(data.recurrenceEndDate).format('YYYY-MM-DD') !== 
+            dayjs(task.recurrenceEndDate).format('YYYY-MM-DD')) {
+            return true;
+        }
+        
+        // Mudança na data de vencimento
+        if (data.dueDate && task.dueDate && 
+            dayjs(data.dueDate).format('YYYY-MM-DD') !== 
+            dayjs(task.dueDate).format('YYYY-MM-DD')) {
+            return true;
+        }
+        
+        return false;
+    }
+    
+    /**
+     * Atualiza as datas de recorrência com base no tipo de recorrência
+     */
+    private updateRecurrenceDates(task: Task, data: Partial<Task>): void {
+        const recType = data.recurrenceType || task.recurrenceType;
+        
+        // Caso não recorrente
+        if (recType === RecurrenceType.NONE) {
+            this.handleNonRecurrentTask(task, data);
+            return;
+        }
+        
+        // Caso recorrente
+        this.handleRecurrentTask(task, data);
+    }
+    
+    /**
+     * Trata atualização para tarefas não recorrentes
+     */
+    private handleNonRecurrentTask(task: Task, data: Partial<Task>): void {
+        if (data.dueDate) {
+            data.recurrenceDates = [dayjs(data.dueDate).format('YYYY-MM-DD')];
+        } else if (task.dueDate) {
+            data.recurrenceDates = [dayjs(task.dueDate).format('YYYY-MM-DD')];
+        } else {
+            data.recurrenceDates = undefined;
+        }
+    }
+    
+    /**
+     * Trata atualização para tarefas recorrentes
+     */
+    private handleRecurrentTask(task: Task, data: Partial<Task>): void {
+        const startDate = data.dueDate || task.dueDate;
+        if (!startDate) return;
+        
+        const recType = data.recurrenceType || task.recurrenceType;
+        const recInterval = data.recurrenceInterval || task.recurrenceInterval || 1;
+        const recEndDate = data.recurrenceEndDate || task.recurrenceEndDate;
+        
+        data.recurrenceDates = this.generateOccurrenceDates(
+            startDate,
+            recType,
+            recInterval,
+            recEndDate
+        );
+    }
+    
+    /**
+     * Verifica se deve atualizar ocorrências futuras
+     */
+    private shouldUpdateFutureOccurrences(task: Task, data: Partial<Task>): boolean {
+        // Verifica se a tarefa é recorrente
+        const isRecurringTask = task.recurrenceType !== RecurrenceType.NONE;
+        
+        // Verifica se o tipo de recorrência está sendo modificado
+        const isRecurrenceTypeModified = data.recurrenceType !== undefined;
+        
+        // Verifica se propriedades que afetam ocorrências futuras estão sendo modificadas
+        const hasRelevantChanges = Boolean(data.title || data.description || data.priority);
+        
+        // Deve atualizar ocorrências futuras se todas as condições forem verdadeiras
+        return isRecurringTask && isRecurrenceTypeModified && hasRelevantChanges;
     }
 
     private async updateFutureOccurrences(
