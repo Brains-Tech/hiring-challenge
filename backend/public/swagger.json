@@ -24,6 +24,16 @@
 				],
 				"type": "string"
 			},
+			"RecurrenceType": {
+				"enum": [
+					"none",
+					"daily",
+					"weekly",
+					"monthly",
+					"yearly"
+				],
+				"type": "string"
+			},
 			"Task": {
 				"properties": {
 					"id": {
@@ -45,6 +55,20 @@
 						"type": "string",
 						"format": "date-time"
 					},
+					"recurrenceType": {
+						"$ref": "#/components/schemas/RecurrenceType"
+					},
+					"recurrenceInterval": {
+						"type": "number",
+						"format": "double"
+					},
+					"recurrenceEndDate": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"parentTaskId": {
+						"type": "string"
+					},
 					"createdAt": {
 						"type": "string",
 						"format": "date-time"
@@ -59,6 +83,7 @@
 					"title",
 					"priority",
 					"status",
+					"recurrenceType",
 					"createdAt",
 					"updatedAt"
 				],
@@ -82,12 +107,27 @@
 					"dueDate": {
 						"type": "string",
 						"format": "date-time"
+					},
+					"recurrenceType": {
+						"$ref": "#/components/schemas/RecurrenceType"
+					},
+					"recurrenceInterval": {
+						"type": "number",
+						"format": "double"
+					},
+					"recurrenceEndDate": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"parentTaskId": {
+						"type": "string"
 					}
 				},
 				"required": [
 					"title",
 					"priority",
-					"status"
+					"status",
+					"recurrenceType"
 				],
 				"type": "object",
 				"description": "From T, pick a set of properties whose keys are in the union K"
@@ -113,6 +153,20 @@
 					"dueDate": {
 						"type": "string",
 						"format": "date-time"
+					},
+					"recurrenceType": {
+						"$ref": "#/components/schemas/RecurrenceType"
+					},
+					"recurrenceInterval": {
+						"type": "number",
+						"format": "double"
+					},
+					"recurrenceEndDate": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"parentTaskId": {
+						"type": "string"
 					}
 				},
 				"type": "object",

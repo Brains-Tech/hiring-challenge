@@ -19,13 +19,15 @@ import {
   CheckCircleOutlined, 
   ClockCircleOutlined, 
   CloseCircleOutlined,
-  InfoCircleOutlined
+  InfoCircleOutlined,
+  CalendarOutlined
 } from '@ant-design/icons';
 import { useQuery } from 'react-query';
-import { taskApi, TaskStatus, TaskPriority } from '@/services/api';
+import { taskApi, TaskStatus, TaskPriority, Task } from '@/services/api';
 import { useTaskOperations } from '@/hooks/useTaskOperations';
 import TaskList from '@/components/TaskList';
 import TaskForm from '@/components/TaskForm';
+import TaskCalendar from '@/components/TaskCalendar';
 import dayjs from 'dayjs';
 
 const { Title, Paragraph } = Typography;
@@ -35,12 +37,14 @@ const { RangePicker } = DatePicker;
 export default function TasksPage() {
   // Estados
   const [activeTab, setActiveTab] = useState('all');
+  const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
   const [filters, setFilters] = useState<{
     status?: TaskStatus;
     priority?: TaskPriority;
     dueFrom?: string;
     dueTo?: string;
   }>({});
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
   // Operações de tarefas
   const taskOperations = useTaskOperations();
@@ -80,6 +84,11 @@ export default function TasksPage() {
   const handleClearFilters = () => {
     setFilters({});
   };
+  
+  // Handler para alternar entre visualização de lista e calendário
+  const toggleViewMode = () => {
+    setViewMode(prev => prev === 'list' ? 'calendar' : 'list');
+  };
 
   // Cálculos para estatísticas
   const totalTasks = tasks.length;
@@ -113,19 +122,32 @@ export default function TasksPage() {
       }));
     }
   };
+  
+  // Handler para seleção de tarefa no calendário
+  const handleTaskSelected = (task: Task) => {
+    setSelectedTask(task);
+  };
 
   return (
     <div style={{ padding: 24, background: '#fff' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
         <Title level={2} style={{ margin: 0 }}>Gerenciamento de Tarefas</Title>
-        <Button
-          type="primary"
-          icon={<PlusOutlined />}
-          onClick={taskOperations.openCreateModal}
-          size="large"
-        >
-          Nova Tarefa
-        </Button>
+        <Space>
+          <Button
+            icon={viewMode === 'list' ? <CalendarOutlined /> : <InfoCircleOutlined />}
+            onClick={toggleViewMode}
+          >
+            Visualizar como {viewMode === 'list' ? 'Calendário' : 'Lista'}
+          </Button>
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={taskOperations.openCreateModal}
+            size="large"
+          >
+            Nova Tarefa
+          </Button>
+        </Space>
       </div>
 
       <Card style={{ marginBottom: 16 }}>
@@ -164,97 +186,107 @@ export default function TasksPage() {
         </Row>
       </Card>
 
-      <div style={{ marginBottom: 16 }}>
-        <Row gutter={16}>
-          <Col xs={24} sm={12} md={8} lg={6}>
-            <Select
-              placeholder="Filtrar por Status"
-              style={{ width: '100%' }}
-              allowClear
-              value={filters.status}
-              onChange={handleStatusChange}
-            >
-              <Select.Option value={TaskStatus.TODO}>A Fazer</Select.Option>
-              <Select.Option value={TaskStatus.IN_PROGRESS}>Em Andamento</Select.Option>
-              <Select.Option value={TaskStatus.COMPLETED}>Concluídas</Select.Option>
-              <Select.Option value={TaskStatus.CANCELED}>Canceladas</Select.Option>
-            </Select>
-          </Col>
-          
-          <Col xs={24} sm={12} md={8} lg={6}>
-            <Select
-              placeholder="Filtrar por Prioridade"
-              style={{ width: '100%' }}
-              allowClear
-              value={filters.priority}
-              onChange={handlePriorityChange}
-            >
-              <Select.Option value={TaskPriority.HIGH}>Alta</Select.Option>
-              <Select.Option value={TaskPriority.MEDIUM}>Média</Select.Option>
-              <Select.Option value={TaskPriority.LOW}>Baixa</Select.Option>
-            </Select>
-          </Col>
-          
-          <Col xs={24} sm={24} md={8} lg={8}>
-            <RangePicker 
-              style={{ width: '100%' }}
-              placeholder={['Data Inicial', 'Data Final']}
-              onChange={handleDateRangeChange}
-              allowClear
-            />
-          </Col>
-          
-          <Col xs={24} sm={24} md={24} lg={4}>
-            <Button 
-              onClick={handleClearFilters}
-              style={{ width: '100%' }}
-            >
-              Limpar Filtros
-            </Button>
-          </Col>
-        </Row>
-      </div>
+      {viewMode === 'list' && (
+        <>
+          <div style={{ marginBottom: 16 }}>
+            <Row gutter={16}>
+              <Col xs={24} sm={12} md={8} lg={6}>
+                <Select
+                  placeholder="Filtrar por Status"
+                  style={{ width: '100%' }}
+                  allowClear
+                  value={filters.status}
+                  onChange={handleStatusChange}
+                >
+                  <Select.Option value={TaskStatus.TODO}>A Fazer</Select.Option>
+                  <Select.Option value={TaskStatus.IN_PROGRESS}>Em Andamento</Select.Option>
+                  <Select.Option value={TaskStatus.COMPLETED}>Concluídas</Select.Option>
+                  <Select.Option value={TaskStatus.CANCELED}>Canceladas</Select.Option>
+                </Select>
+              </Col>
+              
+              <Col xs={24} sm={12} md={8} lg={6}>
+                <Select
+                  placeholder="Filtrar por Prioridade"
+                  style={{ width: '100%' }}
+                  allowClear
+                  value={filters.priority}
+                  onChange={handlePriorityChange}
+                >
+                  <Select.Option value={TaskPriority.HIGH}>Alta</Select.Option>
+                  <Select.Option value={TaskPriority.MEDIUM}>Média</Select.Option>
+                  <Select.Option value={TaskPriority.LOW}>Baixa</Select.Option>
+                </Select>
+              </Col>
+              
+              <Col xs={24} sm={24} md={8} lg={8}>
+                <RangePicker 
+                  style={{ width: '100%' }}
+                  placeholder={['Data Inicial', 'Data Final']}
+                  onChange={handleDateRangeChange}
+                  allowClear
+                />
+              </Col>
+              
+              <Col xs={24} sm={24} md={24} lg={4}>
+                <Button 
+                  onClick={handleClearFilters}
+                  style={{ width: '100%' }}
+                >
+                  Limpar Filtros
+                </Button>
+              </Col>
+            </Row>
+          </div>
 
-      <Tabs activeKey={activeTab} onChange={handleTabChange}>
-        <TabPane tab="Todas as Tarefas" key="all">
-          <TaskList 
-            tasks={tasks} 
-            loading={isLoading} 
-            onEdit={taskOperations.openEditModal}
-          />
-        </TabPane>
-        <TabPane tab="A Fazer" key="todo">
-          <TaskList 
-            tasks={tasks.filter(task => task.status === TaskStatus.TODO)} 
-            loading={isLoading} 
-            onEdit={taskOperations.openEditModal}
-          />
-        </TabPane>
-        <TabPane tab="Em Andamento" key="in_progress">
-          <TaskList 
-            tasks={tasks.filter(task => task.status === TaskStatus.IN_PROGRESS)} 
-            loading={isLoading} 
-            onEdit={taskOperations.openEditModal}
-          />
-        </TabPane>
-        <TabPane tab="Concluídas" key="completed">
-          <TaskList 
-            tasks={tasks.filter(task => task.status === TaskStatus.COMPLETED)} 
-            loading={isLoading} 
-            onEdit={taskOperations.openEditModal}
-          />
-        </TabPane>
-        <TabPane tab={`Atrasadas (${overdueTasksCount})`} key="overdue">
-          <TaskList 
-            tasks={tasks.filter(task => 
-              (task.status === TaskStatus.TODO || task.status === TaskStatus.IN_PROGRESS) && 
-              task.dueDate && dayjs(task.dueDate).isBefore(dayjs(), 'day')
-            )} 
-            loading={isLoading} 
-            onEdit={taskOperations.openEditModal}
-          />
-        </TabPane>
-      </Tabs>
+          <Tabs activeKey={activeTab} onChange={handleTabChange}>
+            <TabPane tab="Todas as Tarefas" key="all">
+              <TaskList 
+                tasks={tasks} 
+                loading={isLoading} 
+                onEdit={taskOperations.openEditModal}
+              />
+            </TabPane>
+            <TabPane tab="A Fazer" key="todo">
+              <TaskList 
+                tasks={tasks.filter(task => task.status === TaskStatus.TODO)} 
+                loading={isLoading} 
+                onEdit={taskOperations.openEditModal}
+              />
+            </TabPane>
+            <TabPane tab="Em Andamento" key="in_progress">
+              <TaskList 
+                tasks={tasks.filter(task => task.status === TaskStatus.IN_PROGRESS)} 
+                loading={isLoading} 
+                onEdit={taskOperations.openEditModal}
+              />
+            </TabPane>
+            <TabPane tab="Concluídas" key="completed">
+              <TaskList 
+                tasks={tasks.filter(task => task.status === TaskStatus.COMPLETED)} 
+                loading={isLoading} 
+                onEdit={taskOperations.openEditModal}
+              />
+            </TabPane>
+            <TabPane tab={`Atrasadas (${overdueTasksCount})`} key="overdue">
+              <TaskList 
+                tasks={tasks.filter(task => 
+                  (task.status === TaskStatus.TODO || task.status === TaskStatus.IN_PROGRESS) && 
+                  task.dueDate && dayjs(task.dueDate).isBefore(dayjs(), 'day')
+                )} 
+                loading={isLoading} 
+                onEdit={taskOperations.openEditModal}
+              />
+            </TabPane>
+          </Tabs>
+        </>
+      )}
+
+      {viewMode === 'calendar' && (
+        <div style={{ marginTop: 16 }}>
+          <TaskCalendar onTaskSelected={handleTaskSelected} />
+        </div>
+      )}
 
       {/* Modal para criar/editar tarefas */}
       <Modal

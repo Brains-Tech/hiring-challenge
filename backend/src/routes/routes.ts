@@ -30,6 +30,11 @@ const models: TsoaRoute.Models = {
         "enums": ["todo","in_progress","completed","canceled"],
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "RecurrenceType": {
+        "dataType": "refEnum",
+        "enums": ["none","daily","weekly","monthly","yearly"],
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "Task": {
         "dataType": "refObject",
         "properties": {
@@ -39,6 +44,10 @@ const models: TsoaRoute.Models = {
             "priority": {"ref":"TaskPriority","required":true},
             "status": {"ref":"TaskStatus","required":true},
             "dueDate": {"dataType":"datetime"},
+            "recurrenceType": {"ref":"RecurrenceType","required":true},
+            "recurrenceInterval": {"dataType":"double"},
+            "recurrenceEndDate": {"dataType":"datetime"},
+            "parentTaskId": {"dataType":"string"},
             "createdAt": {"dataType":"datetime","required":true},
             "updatedAt": {"dataType":"datetime","required":true},
         },
@@ -47,7 +56,7 @@ const models: TsoaRoute.Models = {
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "Pick_Task.Exclude_keyofTask.id-or-createdAt-or-updatedAt__": {
         "dataType": "refAlias",
-        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"title":{"dataType":"string","required":true},"description":{"dataType":"string"},"priority":{"ref":"TaskPriority","required":true},"status":{"ref":"TaskStatus","required":true},"dueDate":{"dataType":"datetime"}},"validators":{}},
+        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"title":{"dataType":"string","required":true},"description":{"dataType":"string"},"priority":{"ref":"TaskPriority","required":true},"status":{"ref":"TaskStatus","required":true},"dueDate":{"dataType":"datetime"},"recurrenceType":{"ref":"RecurrenceType","required":true},"recurrenceInterval":{"dataType":"double"},"recurrenceEndDate":{"dataType":"datetime"},"parentTaskId":{"dataType":"string"}},"validators":{}},
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "Omit_Task.id-or-createdAt-or-updatedAt_": {
@@ -57,7 +66,7 @@ const models: TsoaRoute.Models = {
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "Partial_Omit_Task.id-or-createdAt-or-updatedAt__": {
         "dataType": "refAlias",
-        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"title":{"dataType":"string"},"description":{"dataType":"string"},"priority":{"ref":"TaskPriority"},"status":{"ref":"TaskStatus"},"dueDate":{"dataType":"datetime"}},"validators":{}},
+        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"title":{"dataType":"string"},"description":{"dataType":"string"},"priority":{"ref":"TaskPriority"},"status":{"ref":"TaskStatus"},"dueDate":{"dataType":"datetime"},"recurrenceType":{"ref":"RecurrenceType"},"recurrenceInterval":{"dataType":"double"},"recurrenceEndDate":{"dataType":"datetime"},"parentTaskId":{"dataType":"string"}},"validators":{}},
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "Plant": {

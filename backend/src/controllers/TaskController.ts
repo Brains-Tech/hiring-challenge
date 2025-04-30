@@ -1,7 +1,8 @@
 import { Body, Controller, Get, Path, Post, Put, Delete, Route, Tags, Query } from "tsoa";
 import { Task, TaskStatus, TaskPriority } from "../models/Task";
-import { TaskService, TaskNotFoundError } from "../services/TaskService";
 import { InvalidDataError } from "../errors/InvalidDataError";
+import { TaskNotFoundError } from "../errors/TaskNotFoundError";
+import { TaskService } from "../services/TaskService";
 
 @Route("tasks")
 @Tags("Tasks")
@@ -122,6 +123,22 @@ export class TaskController extends Controller {
     public async cancelTask(@Path() taskId: string): Promise<Task> {
         try {
             return await this.taskService.cancelTask(taskId);
+        } catch (error) {
+            if (error instanceof TaskNotFoundError) {
+                this.setStatus(TaskNotFoundError.httpStatusCode);
+                throw error;
+            }
+            throw error;
+        }
+    }
+
+    /**
+     * Obtém todas as ocorrências de uma tarefa recorrente
+     */
+    @Get("{taskId}/recurrence-dates")
+    public async getTaskRecurrenceDates(@Path() taskId: string): Promise<string[]> {
+        try {
+            return await this.taskService.getRecurrenceDates(taskId);
         } catch (error) {
             if (error instanceof TaskNotFoundError) {
                 this.setStatus(TaskNotFoundError.httpStatusCode);

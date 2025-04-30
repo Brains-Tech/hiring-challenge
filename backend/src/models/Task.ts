@@ -13,6 +13,14 @@ export enum TaskStatus {
     CANCELED = "canceled"
 }
 
+export enum RecurrenceType {
+    NONE = "none",
+    DAILY = "daily",
+    WEEKLY = "weekly",
+    MONTHLY = "monthly",
+    YEARLY = "yearly"
+}
+
 @Entity()
 export class Task {
     @PrimaryGeneratedColumn("uuid")
@@ -38,6 +46,25 @@ export class Task {
 
     @Column({ type: "date", nullable: true })
     dueDate?: Date;
+
+    // Campos para recorrência
+    @Column({
+        type: "varchar",
+        default: RecurrenceType.NONE
+    })
+    recurrenceType!: RecurrenceType;
+
+    @Column({ nullable: true })
+    recurrenceInterval?: number;
+
+    @Column({ nullable: true })
+    recurrenceEndDate?: Date;
+
+    @Column({ nullable: true })
+    parentTaskId?: string;
+
+    @Column("simple-array", { nullable: true })
+    recurrenceDates?: string[];
 
     @Column({ type: "datetime", default: () => "CURRENT_TIMESTAMP" })
     createdAt!: Date;

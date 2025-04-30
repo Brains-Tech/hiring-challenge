@@ -173,11 +173,31 @@ export interface Task {
   priority: TaskPriority;
   status: TaskStatus;
   dueDate?: string;
+  recurrenceType: RecurrenceType;
+  recurrenceInterval?: number;
+  recurrenceEndDate?: string;
+  parentTaskId?: string;
   createdAt: string;
   updatedAt: string;
 }
 
-// Enums para Task
+// Interface para Task atualizada
+export interface Task {
+  id: string;
+  title: string;
+  description?: string;
+  priority: TaskPriority;
+  status: TaskStatus;
+  dueDate?: string;
+  recurrenceType: RecurrenceType;
+  recurrenceInterval?: number;
+  recurrenceEndDate?: string;
+  parentTaskId?: string;
+  recurrenceDates?: string[]; // Nome do campo corrigido
+  createdAt: string;
+  updatedAt: string;
+}
+
 export enum TaskPriority {
   LOW = "low",
   MEDIUM = "medium",
@@ -191,7 +211,15 @@ export enum TaskStatus {
   CANCELED = "canceled"
 }
 
-// API client para tarefas
+export enum RecurrenceType {
+  NONE = "none",
+  DAILY = "daily",
+  WEEKLY = "weekly",
+  MONTHLY = "monthly",
+  YEARLY = "yearly"
+}
+
+// API client para tarefas atualizado
 export const taskApi = {
   getAll: (params?: any) => api.get<Task[]>('/tasks', { params }),
   getById: (id: string) => api.get<Task>(`/tasks/${id}`),
@@ -203,4 +231,5 @@ export const taskApi = {
   complete: (id: string) => api.post<Task>(`/tasks/${id}/complete`),
   start: (id: string) => api.post<Task>(`/tasks/${id}/start`),
   cancel: (id: string) => api.post<Task>(`/tasks/${id}/cancel`),
+  getRecurrenceDates: (id: string) => api.get<string[]>(`/tasks/${id}/recurrence-dates`),
 };
