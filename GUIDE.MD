@@ -22,7 +22,7 @@ Industrial facilities need a system to track and manage physical assets across m
 
 ### Backend Architecture
 
-The project follows the architecture defined by the challenge requirements, focusing on a straightforward fullstack approach:
+The project follows the architecture defined by the challenge, focusing on a straightforward fullstack approach:
 
 ```
 ┌─────────────────────────────────────────────────────────┐
@@ -102,7 +102,7 @@ I designed the database schema to accurately model physical relationships with s
 - **UUID Primary Keys**: Implemented UUID primary keys across all entities for better distribution and security, especially important for potential distributed systems.
 - **Check Constraints**: Added database-level constraints (e.g., preventing an area from being a neighbor to itself) to enforce data integrity at the lowest level.
 
-## 3. Innovative Solutions
+## 3. Solutions
 
 ### Graph-Based Area Connectivity Validation
 
