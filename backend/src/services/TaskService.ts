@@ -111,9 +111,7 @@ export class TaskService {
 
     public async create(data: Omit<Task, "id" | "createdAt" | "updatedAt">): Promise<Task> {
         try {
-            // Verificar se existem dados de recorrência
             if (data.recurrenceType !== RecurrenceType.NONE && data.dueDate) {
-                // Gerar as datas de ocorrência
                 const recurrenceDates = this.generateOccurrenceDates(
                     data.dueDate,
                     data.recurrenceType,
@@ -121,21 +119,17 @@ export class TaskService {
                     data.recurrenceEndDate
                 );
                 
-                // Adicionar as datas ao objeto da tarefa (campo renomeado)
                 data.recurrenceDates = recurrenceDates;
                 
-                // Criamos a primeira ocorrência da tarefa recorrente
                 const task = this.taskRepository.create(data);
                 const savedTask = await this.taskRepository.save(task);
                 
-                // Se for necessário, podemos criar ocorrências futuras automaticamente
                 if (data.recurrenceInterval && data.recurrenceInterval > 0) {
                     await this.createRecurringTaskOccurrences(savedTask);
                 }
                 
                 return savedTask;
             } else {
-                // Tarefa normal (não recorrente)
                 if (data.dueDate) {
                     data.recurrenceDates = [dayjs(data.dueDate).format('YYYY-MM-DD')];
                 }
@@ -152,7 +146,6 @@ export class TaskService {
     }
 
     private async createRecurringTaskOccurrences(parentTask: Task, numberOfOccurrences = 5): Promise<void> {
-        // Verificar se a tarefa é recorrente e tem data de vencimento
         if (parentTask.recurrenceType === RecurrenceType.NONE || !parentTask.dueDate) {
             return;
         }
