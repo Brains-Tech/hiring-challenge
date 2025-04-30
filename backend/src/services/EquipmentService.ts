@@ -5,17 +5,22 @@ import { EquipmentNotFoundError } from "../errors/EquipmentNotFoundError";
 import { InvalidForeignKeyError } from "../errors/InvalidForeignKeyError";
 import { InvalidDataError } from "../errors/InvalidDataError";
 import { DependencyExistsError } from "../errors/DependencyExistsError";
+import { EquipmentAreaService } from "./EquipmentAreaService";
+import { Area } from "src/models/Area";
 
 export class EquipmentService {
     private equipmentRepository: Repository<Equipment>;
+    private equipmentAreaService: EquipmentAreaService;
+
 
     constructor() {
         this.equipmentRepository = DatabaseContext.getInstance().getRepository(Equipment);
+        this.equipmentAreaService = new EquipmentAreaService();
     }
 
     public async findAll(): Promise<Equipment[]> {
         return this.equipmentRepository.find({
-            relations: ["area", "parts"]
+            relations: ["area", "parts", "areaRelations", "areaRelations.area"]
         });
     }
 
@@ -94,4 +99,37 @@ export class EquipmentService {
             throw error;
         }
     }
-} 
+
+     /**
+     * Associa um equipamento a múltiplas áreas
+     */
+     public async assignToAreas(
+        equipmentId: string, 
+        areaIds: string[], 
+        primaryAreaId?: string
+    ): Promise<Equipment> {
+        // Delega para o serviço especializado
+        await this.equipmentAreaService.assignEquipmentToAreas(
+            equipmentId, 
+            areaIds, 
+            primaryAreaId
+        );
+        
+        // Retorna o equipamento atualizado
+        return this.findById(equipmentId);
+    }
+
+    /**
+     * Obtém todas as áreas associadas a um equipamento
+     */
+    public async getEquipmentAreas(equipmentId: string): Promise<Area[]> {
+        return this.equipmentAreaService.getEquipmentAreas(equipmentId);
+    }
+
+    /**
+     * Encontra todos os equipamentos em uma área específica
+     */
+    public async findByArea(areaId: string): Promise<Equipment[]> {
+        return this.equipmentAreaService.getAreaEquipments(areaId);
+    }
+}

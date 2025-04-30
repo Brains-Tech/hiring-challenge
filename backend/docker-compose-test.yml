@@ -1,0 +1,14 @@
+# docker-compose.test.yml
+version: '3.8'
+
+services:
+  tests:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    environment:
+      - NODE_ENV=test
+    command: >
+      sh -c "yarn test"
+    volumes:
+      - ./test-results:/app/test-results

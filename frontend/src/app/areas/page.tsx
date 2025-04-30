@@ -10,6 +10,10 @@ import {
   Select,
   message,
   Space,
+  Tabs,
+  Card,
+  Typography,
+  Tag,
 } from "antd";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { areaApi, plantApi, Area, Plant } from "@/services/api";
@@ -18,13 +22,19 @@ import {
   EditOutlined,
   DeleteOutlined,
   RightOutlined,
+  LinkOutlined,
 } from "@ant-design/icons";
 import type { TableProps } from "antd";
 import { useSearchParams, useRouter } from "next/navigation";
+import NeighborAreasManager from "@/components/NeighborAreasManager";
+
+const { TabPane } = Tabs;
 
 export default function AreasPage() {
   const [form] = Form.useForm();
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [detailsModalVisible, setDetailsModalVisible] = useState(false);
+  const [selectedArea, setSelectedArea] = useState<Area | null>(null);
   const [editingArea, setEditingArea] = useState<Area | null>(null);
   const [filters, setFilters] = useState({ name: "", plantId: "" });
   const queryClient = useQueryClient();
@@ -89,6 +99,20 @@ export default function AreasPage() {
     return nameMatch && plantMatch;
   });
 
+  // Fetch area details when selected
+  const { data: areaDetails, isLoading: detailsLoading } = useQuery(
+    ["area-details", selectedArea?.id],
+    () => areaApi.getById(selectedArea?.id || "").then(res => res.data),
+    { enabled: !!selectedArea?.id }
+  );
+
+  // Fetch neighbor areas
+  const { data: neighborAreas, isLoading: neighborsLoading } = useQuery(
+    ["area-neighbors", selectedArea?.id],
+    () => areaApi.getAreaNeighbors(selectedArea?.id || "").then(res => res.data),
+    { enabled: !!selectedArea?.id }
+  );
+
   const columns: TableProps<Area>["columns"] = [
     {
       title: "Name",
@@ -109,6 +133,28 @@ export default function AreasPage() {
         (a.plant?.name || "").localeCompare(b.plant?.name || ""),
     },
     {
+      title: "Neighbors",
+      key: "neighbors",
+      render: (_, record) => {
+        // Use apenas neighborRelations para contar (assumindo que é bidirecional)
+        const neighborCount = record.neighborRelations?.length || 0;
+        
+        return neighborCount > 0 ? (
+          <Button
+            type="link"
+            onClick={() => {
+              setSelectedArea(record);
+              setDetailsModalVisible(true);
+            }}
+          >
+            {neighborCount} neighbor{neighborCount > 1 ? 's' : ''}
+          </Button>
+        ) : (
+          <Tag color="default">No neighbors</Tag>
+        );
+      }
+    },
+    {
       title: "Actions",
       key: "actions",
       render: (_, record) => (
@@ -121,6 +167,15 @@ export default function AreasPage() {
               setIsModalVisible(true);
             }}
           />
+          <Button
+            icon={<LinkOutlined />}
+            onClick={() => {
+              setSelectedArea(record);
+              setDetailsModalVisible(true);
+            }}
+          >
+            Manage
+          </Button>
           <Button
             icon={<RightOutlined />}
             onClick={() => {
@@ -193,6 +248,7 @@ export default function AreasPage() {
         }}
       />
 
+      {/* Area Create/Edit Modal */}
       <Modal
         title={editingArea ? "Edit Area" : "Add Area"}
         open={isModalVisible}
@@ -255,6 +311,67 @@ export default function AreasPage() {
             </Button>
           </Form.Item>
         </Form>
+      </Modal>
+
+      {/* Area Details Modal with Neighbors Management */}
+      <Modal
+        title={`Area Details: ${selectedArea?.name}`}
+        open={detailsModalVisible}
+        onCancel={() => {
+          setDetailsModalVisible(false);
+          setSelectedArea(null);
+        }}
+        width={800}
+        footer={[
+          <Button key="close" onClick={() => setDetailsModalVisible(false)}>
+            Close
+          </Button>
+        ]}
+      >
+        {selectedArea && (
+          <Tabs defaultActiveKey="1">
+            <TabPane tab="Info" key="1">
+              <Card loading={detailsLoading}>
+                {areaDetails && (
+                  <>
+                    <p><strong>Name:</strong> {areaDetails.name}</p>
+                    <p><strong>Location Description:</strong> {areaDetails.locationDescription}</p>
+                    <p><strong>Plant:</strong> {areaDetails.plant?.name}</p>
+                    
+                    <div style={{ marginTop: 16 }}>
+                      <Typography.Title level={5}>Neighboring Areas</Typography.Title>
+                      {neighborsLoading ? (
+                        <p>Loading neighbors...</p>
+                      ) : (
+                        <>
+                          {neighborAreas && neighborAreas.length > 0 ? (
+                            <div>
+                              {neighborAreas.map((area) => (
+                                <Tag key={area.id} style={{ margin: '0 8px 8px 0' }}>
+                                  {area.name}
+                                </Tag>
+                              ))}
+                            </div>
+                          ) : (
+                            <p>No neighboring areas defined</p>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  </>
+                )}
+              </Card>
+            </TabPane>
+            <TabPane tab="Manage Neighbors" key="2">
+              {selectedArea && (
+                <NeighborAreasManager 
+                  areaId={selectedArea.id} 
+                  plantId={selectedArea.plantId} 
+                />
+              )}
+            </TabPane>
+          </Tabs>
+        )}
       </Modal>
     </div>
   );

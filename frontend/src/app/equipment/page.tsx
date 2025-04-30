@@ -11,6 +11,10 @@ import {
   DatePicker,
   message,
   Space,
+  Tabs,
+  Card,
+  Tag,
+  Typography
 } from "antd";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { equipmentApi, areaApi, Equipment, Area } from "@/services/api";
@@ -23,13 +27,16 @@ import {
 import type { TableProps } from "antd";
 import dayjs from "dayjs";
 import { useRouter, useSearchParams } from "next/navigation";
+import EquipmentAreasManager from "@/components/EquipmentAreasManager";
+
+const { TabPane } = Tabs;
 
 export default function EquipmentPage() {
   const [form] = Form.useForm();
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [editingEquipment, setEditingEquipment] = useState<Equipment | null>(
-    null
-  );
+  const [detailsModalVisible, setDetailsModalVisible] = useState(false);
+  const [selectedEquipment, setSelectedEquipment] = useState<Equipment | null>(null);
+  const [editingEquipment, setEditingEquipment] = useState<Equipment | null>(null);
   const [filters, setFilters] = useState({
     name: "",
     areaId: "",
@@ -60,11 +67,18 @@ export default function EquipmentPage() {
     (data: Omit<Equipment, "id" | "createdAt" | "updatedAt">) =>
       equipmentApi.create(data),
     {
-      onSuccess: () => {
+      onSuccess: (res) => {
         queryClient.invalidateQueries("equipment");
         message.success("Equipment created successfully");
         setIsModalVisible(false);
         form.resetFields();
+        
+        // Optionally, open the areas manager for the new equipment
+        const newEquipmentId = res.data.id;
+        if (newEquipmentId) {
+          setSelectedEquipment(res.data);
+          setDetailsModalVisible(true);
+        }
       },
     }
   );
@@ -94,12 +108,36 @@ export default function EquipmentPage() {
     const nameMatch = eq.name
       .toLowerCase()
       .includes(filters.name.toLowerCase());
-    const areaMatch = !filters.areaId || eq.areaId === filters.areaId;
+    const areaMatch = !filters.areaId || 
+      // Check if this equipment has an area relation with the filtered area
+      (eq.areaRelations && 
+        eq.areaRelations.some(relation => relation.areaId === filters.areaId));
     const manufacturerMatch = eq.manufacturer
       .toLowerCase()
       .includes(filters.manufacturer.toLowerCase());
     return nameMatch && areaMatch && manufacturerMatch;
   });
+
+  // Fetch equipment details including areas when selected
+  const { data: equipmentDetails, isLoading: detailsLoading } = useQuery(
+    ["equipment-details", selectedEquipment?.id],
+    () => equipmentApi.getById(selectedEquipment?.id || "").then(res => res.data),
+    { enabled: !!selectedEquipment?.id }
+  );
+
+  // Fetch primary area for the selected equipment
+  const { data: primaryArea, isLoading: primaryAreaLoading } = useQuery(
+    ["equipment-primary-area", selectedEquipment?.id],
+    () => equipmentApi.getPrimaryArea(selectedEquipment?.id || "").then(res => res.data),
+    { enabled: !!selectedEquipment?.id }
+  );
+
+  // Fetch all areas for the selected equipment
+  const { data: equipmentAreas, isLoading: areasForEquipmentLoading } = useQuery(
+    ["equipment-areas", selectedEquipment?.id],
+    () => equipmentApi.getEquipmentAreas(selectedEquipment?.id || "").then(res => res.data),
+    { enabled: !!selectedEquipment?.id }
+  );
 
   const columns: TableProps<Equipment>["columns"] = [
     {
@@ -129,10 +167,33 @@ export default function EquipmentPage() {
         dayjs(b.initialOperationsDate).unix(),
     },
     {
-      title: "Area",
-      dataIndex: ["area", "name"],
-      key: "area",
-      sorter: (a, b) => (a.area?.name || "").localeCompare(b.area?.name || ""),
+      title: "Areas",
+      key: "areas",
+      render: (_, record) => {
+        if (record.areaRelations && record.areaRelations.length > 0) {
+          // Encontramos a área primária
+          const primaryArea = record.areaRelations.find(relation => relation.isPrimary);
+          const otherAreas = record.areaRelations.filter(relation => !relation.isPrimary);
+          
+          return (
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', alignItems: 'center' }}>
+              {primaryArea && (
+                <Tag color="blue">
+                  {primaryArea.area?.name} <small>(Primary)</small>
+                </Tag>
+              )}
+              {otherAreas.map(relation => (
+                <Tag key={relation.areaId}>{relation.area?.name}</Tag>
+              ))}
+            </div>
+          );
+        } else if (record.area) {
+          // Compatibilidade com o formato anterior
+          return <Tag>{record.area.name}</Tag>;
+        } else {
+          return <Tag color="default">No areas</Tag>;
+        }
+      }
     },
     {
       title: "Actions",
@@ -146,10 +207,19 @@ export default function EquipmentPage() {
               form.setFieldsValue({
                 ...record,
                 initialOperationsDate: dayjs(record.initialOperationsDate),
+                // No longer need areaId as equipment can be in multiple areas
               });
               setIsModalVisible(true);
             }}
           />
+          <Button
+            onClick={() => {
+              setSelectedEquipment(record);
+              setDetailsModalVisible(true);
+            }}
+          >
+            Manage Areas
+          </Button>
           <Button
             icon={<RightOutlined />}
             onClick={() => {
@@ -230,6 +300,7 @@ export default function EquipmentPage() {
         }}
       />
 
+      {/* Equipment Create/Edit Modal */}
       <Modal
         title={editingEquipment ? "Edit Equipment" : "Add Equipment"}
         open={isModalVisible}
@@ -299,12 +370,13 @@ export default function EquipmentPage() {
             <DatePicker style={{ width: "100%" }} />
           </Form.Item>
 
+          {/* Initial area is optional now since areas will be managed separately */}
           <Form.Item
             name="areaId"
-            label="Area"
-            rules={[{ required: true, message: "Please select an area!" }]}
+            label="Initial Area (Optional)"
+            extra="You can manage multiple areas after creating the equipment"
           >
-            <Select>
+            <Select allowClear>
               {areas?.map((area) => (
                 <Select.Option key={area.id} value={area.id}>
                   {area.name}
@@ -319,6 +391,87 @@ export default function EquipmentPage() {
             </Button>
           </Form.Item>
         </Form>
+      </Modal>
+
+      {/* Equipment Details Modal with Areas Management */}
+      <Modal
+        title={`Equipment Details: ${selectedEquipment?.name}`}
+        open={detailsModalVisible}
+        onCancel={() => {
+          setDetailsModalVisible(false);
+          setSelectedEquipment(null);
+        }}
+        width={800}
+        footer={[
+          <Button key="close" onClick={() => setDetailsModalVisible(false)}>
+            Close
+          </Button>
+        ]}
+      >
+        {selectedEquipment && (
+          <Tabs defaultActiveKey="1">
+            <TabPane tab="Info" key="1">
+              <Card loading={detailsLoading}>
+                {equipmentDetails && (
+                  <>
+                    <p><strong>Name:</strong> {equipmentDetails.name}</p>
+                    <p><strong>Manufacturer:</strong> {equipmentDetails.manufacturer}</p>
+                    <p><strong>Serial Number:</strong> {equipmentDetails.serialNumber}</p>
+                    <p><strong>Initial Operations Date:</strong> {dayjs(equipmentDetails.initialOperationsDate).format('YYYY-MM-DD')}</p>
+                    
+                    <div style={{ marginTop: 16 }}>
+                      <Typography.Title level={5}>Areas</Typography.Title>
+                      {areasForEquipmentLoading ? (
+                        <p>Loading areas...</p>
+                      ) : (
+                        <div>
+                          {primaryArea && (
+                            <div style={{ marginBottom: 8 }}>
+                              <Typography.Text strong>Primary Area: </Typography.Text>
+                              <Tag color="blue">{primaryArea.name}</Tag>
+                            </div>
+                          )}
+                          
+                          {equipmentAreas && equipmentAreas.length > 0 ? (
+                            <div>
+                              <Typography.Text strong>All Areas: </Typography.Text>
+                              <div style={{ marginTop: 8 }}>
+                                {equipmentAreas.map((area) => (
+                                  <Tag 
+                                    key={area.id} 
+                                    color={primaryArea?.id === area.id ? "blue" : undefined}
+                                  >
+                                    {area.name}
+                                  </Tag>
+                                ))}
+                              </div>
+                            </div>
+                          ) : (
+                            <p>No areas assigned</p>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </>
+                )}
+              </Card>
+            </TabPane>
+            <TabPane tab="Manage Areas" key="2">
+              {selectedEquipment && (
+                <EquipmentAreasManager 
+                  equipmentId={selectedEquipment.id} 
+                  onSaved={() => {
+                    // Refresh equipment data
+                    queryClient.invalidateQueries("equipment");
+                    queryClient.invalidateQueries(["equipment-details", selectedEquipment.id]);
+                    queryClient.invalidateQueries(["equipment-areas", selectedEquipment.id]);
+                    queryClient.invalidateQueries(["equipment-primary-area", selectedEquipment.id]);
+                  }}
+                />
+              )}
+            </TabPane>
+          </Tabs>
+        )}
       </Modal>
     </div>
   );

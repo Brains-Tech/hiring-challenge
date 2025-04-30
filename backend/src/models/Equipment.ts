@@ -1,6 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany } from "typeorm";
 import { Area } from "./Area";
 import { Part } from "./Part";
+import { EquipmentArea } from "./EquipmentArea";
 
 @Entity()
 export class Equipment {
@@ -27,6 +28,10 @@ export class Equipment {
 
     @OneToMany(() => Part, part => part.equipment)
     parts?: Part[];
+
+    // Nova relação
+    @OneToMany(() => EquipmentArea, equipmentArea => equipmentArea.equipment)
+    areaRelations!: EquipmentArea[];
 
     @Column({ type: "datetime", default: () => "CURRENT_TIMESTAMP" })
     createdAt!: Date;

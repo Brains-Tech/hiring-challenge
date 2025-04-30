@@ -15,7 +15,15 @@ export class AreaService {
 
     public async findAll(): Promise<Area[]> {
         return this.areaRepository.find({
-            relations: ["plant", "equipment", "equipment.parts"]
+            relations: [
+                "plant", 
+                "equipment", 
+                "equipment.parts",
+                "neighborRelations",
+                "neighborRelations.neighbor",
+                "neighboredByRelations",
+                "neighboredByRelations.area"
+            ]
         });
     }
 
