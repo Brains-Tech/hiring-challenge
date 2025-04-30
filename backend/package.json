@@ -7,7 +7,7 @@
     "start": "node dist/index.js",
     "dev": "yarn run generate && ts-node-dev --respawn --transpile-only src/index.ts",
     "validate": "yarn build && yarn test && node dist/migrations/runMigration.js",
-    "maintenance:reset": "ts-node src/migrations/maintenance-reset.ts",
+    "migrate:neighborhood": "ts-node src/migrations/0001-neighborhood-migration.ts",
     "build": "tsc",
     "tsoa": "tsoa spec-and-routes",
     "generate": "yarn tsoa && yarn build",
