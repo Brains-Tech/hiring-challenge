@@ -49,7 +49,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     {
       key: "/tasks",
       icon: <CheckCircleOutlined />,
-      label: "Tarefas",
+      label: "Tasks",
     }
   ];
 
