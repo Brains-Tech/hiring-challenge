@@ -27,7 +27,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
     initialValues?.recurrenceType || RecurrenceType.NONE
   );
 
-  // Inicializar o formulário com os valores iniciais, se houver
+  // Initialize the form with initial values if provided
   useEffect(() => {
     if (initialValues) {
       form.setFieldsValue({
@@ -39,7 +39,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
       setIsRecurring(initialValues.recurrenceType !== RecurrenceType.NONE);
       setRecurrenceType(initialValues.recurrenceType);
     } else {
-      // Valores padrão para um novo formulário
+      // Default values for a new form
       form.setFieldsValue({
         status: TaskStatus.TODO,
         priority: TaskPriority.MEDIUM,
@@ -95,19 +95,19 @@ const TaskForm: React.FC<TaskFormProps> = ({
     onFinish(processedValues);
   };
 
-  // Função para obter o texto de intervalo com base no tipo de recorrência
+  // Function to get interval text based on recurrence type
   const getIntervalText = (type: RecurrenceType) => {
     switch (type) {
       case RecurrenceType.DAILY:
-        return 'dias';
+        return 'days';
       case RecurrenceType.WEEKLY:
-        return 'semanas';
+        return 'weeks';
       case RecurrenceType.MONTHLY:
-        return 'meses';
+        return 'months';
       case RecurrenceType.YEARLY:
-        return 'anos';
+        return 'years';
       default:
-        return 'intervalo';
+        return 'interval';
     }
   };
 
@@ -119,19 +119,19 @@ const TaskForm: React.FC<TaskFormProps> = ({
     >
       <Form.Item
         name="title"
-        label="Título"
-        rules={[{ required: true, message: 'Por favor insira o título da tarefa' }]}
+        label="Title"
+        rules={[{ required: true, message: 'Please enter the task title' }]}
       >
-        <Input placeholder="Título da tarefa" />
+        <Input placeholder="Task title" />
       </Form.Item>
 
       <Form.Item
         name="description"
-        label="Descrição"
+        label="Description"
       >
         <TextArea 
           rows={4} 
-          placeholder="Descrição detalhada da tarefa (opcional)"
+          placeholder="Detailed task description (optional)"
         />
       </Form.Item>
 
@@ -139,13 +139,13 @@ const TaskForm: React.FC<TaskFormProps> = ({
         <Col span={12}>
           <Form.Item
             name="priority"
-            label="Prioridade"
-            rules={[{ required: true, message: 'Por favor selecione a prioridade' }]}
+            label="Priority"
+            rules={[{ required: true, message: 'Please select a priority' }]}
           >
             <Select>
-              <Option value={TaskPriority.LOW}>Baixa</Option>
-              <Option value={TaskPriority.MEDIUM}>Média</Option>
-              <Option value={TaskPriority.HIGH}>Alta</Option>
+              <Option value={TaskPriority.LOW}>Low</Option>
+              <Option value={TaskPriority.MEDIUM}>Medium</Option>
+              <Option value={TaskPriority.HIGH}>High</Option>
             </Select>
           </Form.Item>
         </Col>
@@ -153,13 +153,13 @@ const TaskForm: React.FC<TaskFormProps> = ({
           <Form.Item
             name="status"
             label="Status"
-            rules={[{ required: true, message: 'Por favor selecione o status' }]}
+            rules={[{ required: true, message: 'Please select a status' }]}
           >
             <Select>
-              <Option value={TaskStatus.TODO}>A Fazer</Option>
-              <Option value={TaskStatus.IN_PROGRESS}>Em Andamento</Option>
-              <Option value={TaskStatus.COMPLETED}>Concluída</Option>
-              <Option value={TaskStatus.CANCELED}>Cancelada</Option>
+              <Option value={TaskStatus.TODO}>To Do</Option>
+              <Option value={TaskStatus.IN_PROGRESS}>In Progress</Option>
+              <Option value={TaskStatus.COMPLETED}>Completed</Option>
+              <Option value={TaskStatus.CANCELED}>Canceled</Option>
             </Select>
           </Form.Item>
         </Col>
@@ -167,26 +167,26 @@ const TaskForm: React.FC<TaskFormProps> = ({
 
       <Form.Item
         name="dueDate"
-        label="Data de Vencimento"
-        rules={[{ required: true, message: 'Por favor selecione a data de vencimento' }]}
-        help="A data de vencimento é necessária para exibir a tarefa no calendário"
+        label="Due Date"
+        rules={[{ required: true, message: 'Please select a due date' }]}
+        help="Due date is required to display the task on the calendar"
       >
         <DatePicker 
           style={{ width: '100%' }} 
-          placeholder="Selecione uma data"
+          placeholder="Select a date"
         />
       </Form.Item>
       
-      <Divider>Recorrência</Divider>
+      <Divider>Recurrence</Divider>
       
       <Form.Item
         name="isRecurring"
         valuePropName="checked"
-        label="Tarefa Recorrente"
+        label="Recurring Task"
       >
         <Switch 
-          checkedChildren="Sim" 
-          unCheckedChildren="Não" 
+          checkedChildren="Yes" 
+          unCheckedChildren="No" 
           onChange={handleRecurrenceToggle}
         />
       </Form.Item>
@@ -195,39 +195,39 @@ const TaskForm: React.FC<TaskFormProps> = ({
         <>
           <Form.Item
             name="recurrenceType"
-            label="Frequência"
-            rules={[{ required: isRecurring, message: 'Por favor selecione a frequência' }]}
+            label="Frequency"
+            rules={[{ required: isRecurring, message: 'Please select a frequency' }]}
           >
             <Select onChange={handleRecurrenceTypeChange}>
-              <Option value={RecurrenceType.DAILY}>Diariamente</Option>
-              <Option value={RecurrenceType.WEEKLY}>Semanalmente</Option>
-              <Option value={RecurrenceType.MONTHLY}>Mensalmente</Option>
-              <Option value={RecurrenceType.YEARLY}>Anualmente</Option>
+              <Option value={RecurrenceType.DAILY}>Daily</Option>
+              <Option value={RecurrenceType.WEEKLY}>Weekly</Option>
+              <Option value={RecurrenceType.MONTHLY}>Monthly</Option>
+              <Option value={RecurrenceType.YEARLY}>Yearly</Option>
             </Select>
           </Form.Item>
           
           <Form.Item
             name="recurrenceInterval"
-            label="Intervalo de Repetição"
-            rules={[{ required: isRecurring, message: 'Por favor defina o intervalo' }]}
-            extra={`A tarefa será repetida a cada ${form.getFieldValue('recurrenceInterval') || 1} ${getIntervalText(recurrenceType)}`}
+            label="Repeat Interval"
+            rules={[{ required: isRecurring, message: 'Please set the interval' }]}
+            extra={`The task will repeat every ${form.getFieldValue('recurrenceInterval') || 1} ${getIntervalText(recurrenceType)}`}
           >
             <InputNumber min={1} defaultValue={1} style={{ width: '100%' }} />
           </Form.Item>
           
           <Form.Item
             name="recurrenceEndDate"
-            label="Data Final (opcional)"
+            label="End Date (optional)"
           >
             <DatePicker 
               style={{ width: '100%' }} 
-              placeholder="Selecione uma data de término da recorrência"
+              placeholder="Select an end date for recurrence"
             />
           </Form.Item>
           
           <Alert
-            message="Informação"
-            description="As tarefas recorrentes serão exibidas em todas as datas aplicáveis no calendário."
+            message="Information"
+            description="Recurring tasks will be displayed on all applicable dates in the calendar."
             type="info"
             showIcon
             style={{ marginBottom: 16 }}
@@ -238,14 +238,14 @@ const TaskForm: React.FC<TaskFormProps> = ({
       <Form.Item>
         <Space style={{ display: 'flex', justifyContent: 'flex-end' }}>
           <Button onClick={onCancel}>
-            Cancelar
+            Cancel
           </Button>
           <Button 
             type="primary" 
             htmlType="submit" 
             loading={loading}
           >
-            {initialValues ? 'Atualizar' : 'Criar'} Tarefa
+            {initialValues ? 'Update' : 'Create'} Task
           </Button>
         </Space>
       </Form.Item>
