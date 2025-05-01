@@ -96,11 +96,6 @@ export default function TasksPage() {
   const pendingTasks = tasks.filter((task: { status: TaskStatus; }) => task.status === TaskStatus.TODO).length;
   const inProgressTasks = tasks.filter((task: { status: TaskStatus; }) => task.status === TaskStatus.IN_PROGRESS).length;
   const canceledTasks = tasks.filter((task: { status: TaskStatus; }) => task.status === TaskStatus.CANCELED).length;
-  
-  const overdueTasksCount = tasks.filter((task: { status: TaskStatus; dueDate: any; }) => 
-    (task.status === TaskStatus.TODO || task.status === TaskStatus.IN_PROGRESS) && 
-    task.dueDate && dayjs(task.dueDate).isBefore(dayjs(), 'day')
-  ).length;
 
   // Handlers for tabs
   const handleTabChange = (key: string) => {
@@ -114,12 +109,8 @@ export default function TasksPage() {
       handleStatusChange(TaskStatus.IN_PROGRESS);
     } else if (key === 'completed') {
       handleStatusChange(TaskStatus.COMPLETED);
-    } else if (key === 'overdue') {
-      setFilters((prev: any) => ({
-        ...prev,
-        status: undefined,
-        dueTo: dayjs().format('YYYY-MM-DD')
-      }));
+    } else if (key === 'canceled') {
+      handleStatusChange(TaskStatus.CANCELED);
     }
   };
   
@@ -176,10 +167,10 @@ export default function TasksPage() {
             />
           </Col>
           <Col xs={24} sm={12} md={6}>
-            <Statistic 
-              title="Overdue" 
-              value={overdueTasksCount} 
-              valueStyle={{ color: overdueTasksCount > 0 ? '#f5222d' : undefined }}
+                          <Statistic 
+              title="Canceled" 
+              value={canceledTasks} 
+              valueStyle={{ color: canceledTasks > 0 ? '#f5222d' : undefined }}
               prefix={<CloseCircleOutlined />} 
             />
           </Col>
@@ -268,12 +259,9 @@ export default function TasksPage() {
                 onEdit={taskOperations.openEditModal}
               />
             </TabPane>
-            <TabPane tab={`Overdue (${overdueTasksCount})`} key="overdue">
+            <TabPane tab="Canceled" key="canceled">
               <TaskList 
-                tasks={tasks.filter((task: { status: TaskStatus; dueDate: any; }) => 
-                  (task.status === TaskStatus.TODO || task.status === TaskStatus.IN_PROGRESS) && 
-                  task.dueDate && dayjs(task.dueDate).isBefore(dayjs(), 'day')
-                )} 
+                tasks={tasks} 
                 loading={isLoading} 
                 onEdit={taskOperations.openEditModal}
               />

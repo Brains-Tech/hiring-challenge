@@ -58,7 +58,7 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, loading, onEdit }) => {
     }
   );
   
-  // Mapeamento de rótulos de recorrência
+  // Recurrence label mapping
   const getRecurrenceLabel = (task: Task) => {
     if (task.recurrenceType === RecurrenceType.NONE) {
       return null;
@@ -68,16 +68,16 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, loading, onEdit }) => {
     
     switch (task.recurrenceType) {
       case RecurrenceType.DAILY:
-        label = "Diária";
+        label = "Daily";
         break;
       case RecurrenceType.WEEKLY:
-        label = "Semanal";
+        label = "Weekly";
         break;
       case RecurrenceType.MONTHLY:
-        label = "Mensal";
+        label = "Monthly";
         break;
       case RecurrenceType.YEARLY:
-        label = "Anual";
+        label = "Yearly";
         break;
     }
     
@@ -88,10 +88,10 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, loading, onEdit }) => {
     return label;
   };
   
-  // Colunas da tabela
+  // Table columns
   const columns = [
     {
-      title: 'Título',
+      title: 'Title',
       dataIndex: 'title',
       key: 'title',
       render: (text: string, record: Task) => (
@@ -105,7 +105,7 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, loading, onEdit }) => {
               </Tag>
             )}
             {record.parentTaskId && (
-              <Tag color="cyan" style={{ marginLeft: 4 }}>Recorrente</Tag>
+              <Tag color="cyan" style={{ marginLeft: 4 }}>Recurring</Tag>
             )}
           </Space>
         </Tooltip>
@@ -114,7 +114,7 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, loading, onEdit }) => {
       ellipsis: true,
     },
     {
-      title: 'Prioridade',
+      title: 'Priority',
       dataIndex: 'priority',
       key: 'priority',
       render: (priority: TaskPriority) => {
@@ -125,9 +125,9 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, loading, onEdit }) => {
         };
         
         const labelMap = {
-          [TaskPriority.LOW]: 'Baixa',
-          [TaskPriority.MEDIUM]: 'Média',
-          [TaskPriority.HIGH]: 'Alta',
+          [TaskPriority.LOW]: 'Low',
+          [TaskPriority.MEDIUM]: 'Medium',
+          [TaskPriority.HIGH]: 'High',
         };
         
         return (
@@ -137,9 +137,9 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, loading, onEdit }) => {
         );
       },
       filters: [
-        { text: 'Alta', value: TaskPriority.HIGH },
-        { text: 'Média', value: TaskPriority.MEDIUM },
-        { text: 'Baixa', value: TaskPriority.LOW },
+        { text: 'High', value: TaskPriority.HIGH },
+        { text: 'Medium', value: TaskPriority.MEDIUM },
+        { text: 'Low', value: TaskPriority.LOW },
       ],
       onFilter: (value: string, record: Task) => record.priority === value,
       width: 100,
@@ -150,10 +150,10 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, loading, onEdit }) => {
       key: 'status',
       render: (status: TaskStatus) => {
         const statusMap = {
-          [TaskStatus.TODO]: { color: 'default', label: 'A Fazer' },
-          [TaskStatus.IN_PROGRESS]: { color: 'processing', label: 'Em Andamento' },
-          [TaskStatus.COMPLETED]: { color: 'success', label: 'Concluída' },
-          [TaskStatus.CANCELED]: { color: 'error', label: 'Cancelada' },
+          [TaskStatus.TODO]: { color: 'default', label: 'To Do' },
+          [TaskStatus.IN_PROGRESS]: { color: 'processing', label: 'In Progress' },
+          [TaskStatus.COMPLETED]: { color: 'success', label: 'Completed' },
+          [TaskStatus.CANCELED]: { color: 'error', label: 'Canceled' },
         };
         
         return (
@@ -164,16 +164,16 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, loading, onEdit }) => {
         );
       },
       filters: [
-        { text: 'A Fazer', value: TaskStatus.TODO },
-        { text: 'Em Andamento', value: TaskStatus.IN_PROGRESS },
-        { text: 'Concluída', value: TaskStatus.COMPLETED },
-        { text: 'Cancelada', value: TaskStatus.CANCELED },
+        { text: 'To Do', value: TaskStatus.TODO },
+        { text: 'In Progress', value: TaskStatus.IN_PROGRESS },
+        { text: 'Completed', value: TaskStatus.COMPLETED },
+        { text: 'Canceled', value: TaskStatus.CANCELED },
       ],
       onFilter: (value: string, record: Task) => record.status === value,
       width: 140,
     },
     {
-      title: 'Data de Vencimento',
+      title: 'Due Date',
       dataIndex: 'dueDate',
       key: 'dueDate',
       render: (date: string, record: Task) => {
@@ -185,13 +185,13 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, loading, onEdit }) => {
         
         return (
           <div style={{ color: isOverdue ? '#f5222d' : 'inherit' }}>
-            {dayjs(date).format('DD/MM/YYYY')}
+            {dayjs(date).format('MM/DD/YYYY')}
             {record.recurrenceDates && record.recurrenceDates.length > 1 && (
-              <Tooltip title="Esta tarefa tem múltiplas datas de execução">
+              <Tooltip title="This task has multiple execution dates">
                 <CalendarOutlined style={{ marginLeft: 8 }} />
               </Tooltip>
             )}
-            {isOverdue && <Tag color="red" style={{ marginLeft: 4 }}>Atrasada</Tag>}
+            {isOverdue && <Tag color="red" style={{ marginLeft: 4 }}>Overdue</Tag>}
           </div>
         );
       },
@@ -204,7 +204,7 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, loading, onEdit }) => {
       width: 180,
     },
     {
-      title: 'Recorrência',
+      title: 'Recurrence',
       key: 'recurrence',
       render: (_: any, record: Task) => {
         if (record.recurrenceType === RecurrenceType.NONE) {
@@ -213,27 +213,27 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, loading, onEdit }) => {
         
         let recurrenceInfo = getRecurrenceLabel(record);
         
-        // Adicionar informação sobre o fim da recorrência
+        // Add information about recurrence end
         if (record.recurrenceEndDate) {
-          recurrenceInfo += ` até ${dayjs(record.recurrenceEndDate).format('DD/MM/YYYY')}`;
+          recurrenceInfo += ` until ${dayjs(record.recurrenceEndDate).format('MM/DD/YYYY')}`;
         }
         
-        // Informação sobre o número de ocorrências
+        // Information about number of occurrences
         const occurrencesCount = record.recurrenceDates?.length || 1;
         
         return (
           <Tooltip title={
             <>
-              <div>Tipo: {getRecurrenceLabel(record)}</div>
+              <div>Type: {getRecurrenceLabel(record)}</div>
               {record.recurrenceEndDate && 
-                <div>Término: {dayjs(record.recurrenceEndDate).format('DD/MM/YYYY')}</div>}
-              <div>Total de ocorrências: {occurrencesCount}</div>
+                <div>End: {dayjs(record.recurrenceEndDate).format('MM/DD/YYYY')}</div>}
+              <div>Total occurrences: {occurrencesCount}</div>
             </>
           }>
             <div>
               {getRecurrenceLabel(record)}
               {record.recurrenceDates && record.recurrenceDates.length > 0 && (
-                <Tag style={{ marginLeft: 8 }}>{record.recurrenceDates.length} datas</Tag>
+                <Tag style={{ marginLeft: 8 }}>{record.recurrenceDates.length} dates</Tag>
               )}
             </div>
           </Tooltip>
@@ -242,28 +242,28 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, loading, onEdit }) => {
       width: 180,
     },
     {
-      title: 'Ações',
+      title: 'Actions',
       key: 'actions',
       render: (_: any, record: Task) => (
         <Space size="small">
-          {/* Botão de editar */}
+          {/* Edit button */}
           {onEdit && (
             <Button 
               icon={<EditOutlined />} 
               size="small" 
               onClick={() => onEdit(record)}
-              title="Editar"
+              title="Edit"
             />
           )}
           
-          {/* Ações baseadas no status atual */}
+          {/* Actions based on current status */}
           {record.status === TaskStatus.TODO && (
             <Button 
               icon={<PlayCircleOutlined />} 
               size="small" 
               type="primary"
               onClick={() => startTask.mutate(record.id)}
-              title="Iniciar"
+              title="Start"
             />
           )}
           
@@ -273,7 +273,7 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, loading, onEdit }) => {
               size="small" 
               type="primary"
               onClick={() => completeTask.mutate(record.id)}
-              title="Concluir"
+              title="Complete"
               style={{ backgroundColor: '#52c41a', borderColor: '#52c41a' }}
             />
           )}
@@ -283,22 +283,22 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, loading, onEdit }) => {
               icon={<StopOutlined />} 
               size="small" 
               onClick={() => cancelTask.mutate(record.id)}
-              title="Cancelar"
+              title="Cancel"
               danger
             />
           )}
           
           <Popconfirm
-            title="Tem certeza que deseja excluir esta tarefa?"
+            title="Are you sure you want to delete this task?"
             onConfirm={() => deleteTask.mutate(record.id)}
-            okText="Sim"
-            cancelText="Não"
+            okText="Yes"
+            cancelText="No"
           >
             <Button 
               icon={<DeleteOutlined />} 
               size="small" 
               danger
-              title="Excluir"
+              title="Delete"
             />
           </Popconfirm>
         </Space>
@@ -317,7 +317,7 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, loading, onEdit }) => {
       pagination={{ 
         pageSize: 10,
         showSizeChanger: true,
-        showTotal: (total) => `Total ${total} tarefas`
+        showTotal: (total) => `Total ${total} tasks`
       }}
       scroll={{ x: 1200 }}
     />
