@@ -1,6 +1,8 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from "typeorm";
 import { Equipment } from "./Equipment";
 
+import { ModelBase } from "./ModelBase";
+
 export enum PartType {
     ELECTRIC = "electric",
     ELECTRONIC = "electronic",
@@ -9,10 +11,7 @@ export enum PartType {
 }
 
 @Entity()
-export class Part {
-    @PrimaryGeneratedColumn("uuid")
-    id!: string;
-
+export class Part extends ModelBase {
     @Column()
     name!: string;
 
