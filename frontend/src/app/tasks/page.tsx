@@ -35,7 +35,7 @@ const { TabPane } = Tabs;
 const { RangePicker } = DatePicker;
 
 export default function TasksPage() {
-  // Estados
+  // States
   const [activeTab, setActiveTab] = useState('all');
   const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
   const [filters, setFilters] = useState<{
@@ -46,34 +46,34 @@ export default function TasksPage() {
   }>({});
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
-  // Operações de tarefas
+  // Task operations
   const taskOperations = useTaskOperations();
 
-  // Carregar tarefas com filtros
+  // Load tasks with filters
   const { data: tasks = [], isLoading } = useQuery(
     ['tasks', filters],
-    () => taskApi.getAll(filters).then(res => res.data),
+    () => taskApi.getAll(filters).then((res: { data: any; }) => res.data),
     { keepPreviousData: true }
   );
 
-  // Handlers para filtros
+  // Handlers for filters
   const handleStatusChange = (status?: TaskStatus) => {
-    setFilters(prev => ({ ...prev, status }));
+    setFilters((prev: any) => ({ ...prev, status }));
   };
 
   const handlePriorityChange = (priority?: TaskPriority) => {
-    setFilters(prev => ({ ...prev, priority }));
+    setFilters((prev: any) => ({ ...prev, priority }));
   };
 
   const handleDateRangeChange = (dates: any) => {
     if (dates && dates.length === 2) {
-      setFilters(prev => ({
+      setFilters((prev: any) => ({
         ...prev,
         dueFrom: dates[0].format('YYYY-MM-DD'),
         dueTo: dates[1].format('YYYY-MM-DD')
       }));
     } else {
-      setFilters(prev => ({
+      setFilters((prev: any) => ({
         ...prev,
         dueFrom: undefined,
         dueTo: undefined
@@ -85,24 +85,24 @@ export default function TasksPage() {
     setFilters({});
   };
   
-  // Handler para alternar entre visualização de lista e calendário
+  // Handler to toggle between list and calendar view
   const toggleViewMode = () => {
-    setViewMode(prev => prev === 'list' ? 'calendar' : 'list');
+    setViewMode((prev: string) => prev === 'list' ? 'calendar' : 'list');
   };
 
-  // Cálculos para estatísticas
+  // Calculations for statistics
   const totalTasks = tasks.length;
-  const completedTasks = tasks.filter(task => task.status === TaskStatus.COMPLETED).length;
-  const pendingTasks = tasks.filter(task => task.status === TaskStatus.TODO).length;
-  const inProgressTasks = tasks.filter(task => task.status === TaskStatus.IN_PROGRESS).length;
-  const canceledTasks = tasks.filter(task => task.status === TaskStatus.CANCELED).length;
+  const completedTasks = tasks.filter((task: { status: TaskStatus; }) => task.status === TaskStatus.COMPLETED).length;
+  const pendingTasks = tasks.filter((task: { status: TaskStatus; }) => task.status === TaskStatus.TODO).length;
+  const inProgressTasks = tasks.filter((task: { status: TaskStatus; }) => task.status === TaskStatus.IN_PROGRESS).length;
+  const canceledTasks = tasks.filter((task: { status: TaskStatus; }) => task.status === TaskStatus.CANCELED).length;
   
-  const overdueTasksCount = tasks.filter(task => 
+  const overdueTasksCount = tasks.filter((task: { status: TaskStatus; dueDate: any; }) => 
     (task.status === TaskStatus.TODO || task.status === TaskStatus.IN_PROGRESS) && 
     task.dueDate && dayjs(task.dueDate).isBefore(dayjs(), 'day')
   ).length;
 
-  // Handlers para tabs
+  // Handlers for tabs
   const handleTabChange = (key: string) => {
     setActiveTab(key);
     
@@ -115,7 +115,7 @@ export default function TasksPage() {
     } else if (key === 'completed') {
       handleStatusChange(TaskStatus.COMPLETED);
     } else if (key === 'overdue') {
-      setFilters(prev => ({
+      setFilters((prev: any) => ({
         ...prev,
         status: undefined,
         dueTo: dayjs().format('YYYY-MM-DD')
@@ -123,7 +123,7 @@ export default function TasksPage() {
     }
   };
   
-  // Handler para seleção de tarefa no calendário
+  // Handler for task selection in calendar
   const handleTaskSelected = (task: Task) => {
     setSelectedTask(task);
   };
@@ -131,13 +131,13 @@ export default function TasksPage() {
   return (
     <div style={{ padding: 24, background: '#fff' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
-        <Title level={2} style={{ margin: 0 }}>Gerenciamento de Tarefas</Title>
+        <Title level={2} style={{ margin: 0 }}>Task Management</Title>
         <Space>
           <Button
             icon={viewMode === 'list' ? <CalendarOutlined /> : <InfoCircleOutlined />}
             onClick={toggleViewMode}
           >
-            Visualizar como {viewMode === 'list' ? 'Calendário' : 'Lista'}
+            View as {viewMode === 'list' ? 'Calendar' : 'List'}
           </Button>
           <Button
             type="primary"
@@ -145,7 +145,7 @@ export default function TasksPage() {
             onClick={taskOperations.openCreateModal}
             size="large"
           >
-            Nova Tarefa
+            New Task
           </Button>
         </Space>
       </div>
@@ -154,14 +154,14 @@ export default function TasksPage() {
         <Row gutter={16}>
           <Col xs={24} sm={12} md={6}>
             <Statistic 
-              title="Total de Tarefas" 
+              title="Total Tasks" 
               value={totalTasks} 
               prefix={<InfoCircleOutlined />} 
             />
           </Col>
           <Col xs={24} sm={12} md={6}>
             <Statistic 
-              title="Concluídas" 
+              title="Completed" 
               value={completedTasks} 
               valueStyle={{ color: '#52c41a' }}
               prefix={<CheckCircleOutlined />} 
@@ -169,7 +169,7 @@ export default function TasksPage() {
           </Col>
           <Col xs={24} sm={12} md={6}>
             <Statistic 
-              title="Em Andamento" 
+              title="In Progress" 
               value={inProgressTasks} 
               valueStyle={{ color: '#1890ff' }}
               prefix={<ClockCircleOutlined />} 
@@ -177,7 +177,7 @@ export default function TasksPage() {
           </Col>
           <Col xs={24} sm={12} md={6}>
             <Statistic 
-              title="Atrasadas" 
+              title="Overdue" 
               value={overdueTasksCount} 
               valueStyle={{ color: overdueTasksCount > 0 ? '#f5222d' : undefined }}
               prefix={<CloseCircleOutlined />} 
@@ -192,37 +192,37 @@ export default function TasksPage() {
             <Row gutter={16}>
               <Col xs={24} sm={12} md={8} lg={6}>
                 <Select
-                  placeholder="Filtrar por Status"
+                  placeholder="Filter by Status"
                   style={{ width: '100%' }}
                   allowClear
                   value={filters.status}
                   onChange={handleStatusChange}
                 >
-                  <Select.Option value={TaskStatus.TODO}>A Fazer</Select.Option>
-                  <Select.Option value={TaskStatus.IN_PROGRESS}>Em Andamento</Select.Option>
-                  <Select.Option value={TaskStatus.COMPLETED}>Concluídas</Select.Option>
-                  <Select.Option value={TaskStatus.CANCELED}>Canceladas</Select.Option>
+                  <Select.Option value={TaskStatus.TODO}>To Do</Select.Option>
+                  <Select.Option value={TaskStatus.IN_PROGRESS}>In Progress</Select.Option>
+                  <Select.Option value={TaskStatus.COMPLETED}>Completed</Select.Option>
+                  <Select.Option value={TaskStatus.CANCELED}>Canceled</Select.Option>
                 </Select>
               </Col>
               
               <Col xs={24} sm={12} md={8} lg={6}>
                 <Select
-                  placeholder="Filtrar por Prioridade"
+                  placeholder="Filter by Priority"
                   style={{ width: '100%' }}
                   allowClear
                   value={filters.priority}
                   onChange={handlePriorityChange}
                 >
-                  <Select.Option value={TaskPriority.HIGH}>Alta</Select.Option>
-                  <Select.Option value={TaskPriority.MEDIUM}>Média</Select.Option>
-                  <Select.Option value={TaskPriority.LOW}>Baixa</Select.Option>
+                  <Select.Option value={TaskPriority.HIGH}>High</Select.Option>
+                  <Select.Option value={TaskPriority.MEDIUM}>Medium</Select.Option>
+                  <Select.Option value={TaskPriority.LOW}>Low</Select.Option>
                 </Select>
               </Col>
               
               <Col xs={24} sm={24} md={8} lg={8}>
                 <RangePicker 
                   style={{ width: '100%' }}
-                  placeholder={['Data Inicial', 'Data Final']}
+                  placeholder={['Start Date', 'End Date']}
                   onChange={handleDateRangeChange}
                   allowClear
                 />
@@ -233,44 +233,44 @@ export default function TasksPage() {
                   onClick={handleClearFilters}
                   style={{ width: '100%' }}
                 >
-                  Limpar Filtros
+                  Clear Filters
                 </Button>
               </Col>
             </Row>
           </div>
 
           <Tabs activeKey={activeTab} onChange={handleTabChange}>
-            <TabPane tab="Todas as Tarefas" key="all">
+            <TabPane tab="All Tasks" key="all">
               <TaskList 
                 tasks={tasks} 
                 loading={isLoading} 
                 onEdit={taskOperations.openEditModal}
               />
             </TabPane>
-            <TabPane tab="A Fazer" key="todo">
+            <TabPane tab="To Do" key="todo">
               <TaskList 
-                tasks={tasks.filter(task => task.status === TaskStatus.TODO)} 
+                tasks={tasks.filter((task: { status: TaskStatus; }) => task.status === TaskStatus.TODO)} 
                 loading={isLoading} 
                 onEdit={taskOperations.openEditModal}
               />
             </TabPane>
-            <TabPane tab="Em Andamento" key="in_progress">
+            <TabPane tab="In Progress" key="in_progress">
               <TaskList 
-                tasks={tasks.filter(task => task.status === TaskStatus.IN_PROGRESS)} 
+                tasks={tasks.filter((task: { status: TaskStatus; }) => task.status === TaskStatus.IN_PROGRESS)} 
                 loading={isLoading} 
                 onEdit={taskOperations.openEditModal}
               />
             </TabPane>
-            <TabPane tab="Concluídas" key="completed">
+            <TabPane tab="Completed" key="completed">
               <TaskList 
-                tasks={tasks.filter(task => task.status === TaskStatus.COMPLETED)} 
+                tasks={tasks.filter((task: { status: TaskStatus; }) => task.status === TaskStatus.COMPLETED)} 
                 loading={isLoading} 
                 onEdit={taskOperations.openEditModal}
               />
             </TabPane>
-            <TabPane tab={`Atrasadas (${overdueTasksCount})`} key="overdue">
+            <TabPane tab={`Overdue (${overdueTasksCount})`} key="overdue">
               <TaskList 
-                tasks={tasks.filter(task => 
+                tasks={tasks.filter((task: { status: TaskStatus; dueDate: any; }) => 
                   (task.status === TaskStatus.TODO || task.status === TaskStatus.IN_PROGRESS) && 
                   task.dueDate && dayjs(task.dueDate).isBefore(dayjs(), 'day')
                 )} 
@@ -288,9 +288,9 @@ export default function TasksPage() {
         </div>
       )}
 
-      {/* Modal para criar/editar tarefas */}
+      {/* Modal for creating/editing tasks */}
       <Modal
-        title={taskOperations.editingTask ? "Editar Tarefa" : "Nova Tarefa"}
+        title={taskOperations.editingTask ? "Edit Task" : "New Task"}
         open={taskOperations.modalVisible}
         onCancel={taskOperations.closeModal}
         footer={null}
@@ -298,7 +298,7 @@ export default function TasksPage() {
       >
         <TaskForm
           initialValues={taskOperations.editingTask ?? undefined}
-          onFinish={(values) => {
+          onFinish={(values: any) => {
             if (taskOperations.editingTask) {
               taskOperations.updateTask.mutate({ 
                 id: taskOperations.editingTask.id, 
