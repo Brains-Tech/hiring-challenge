@@ -1,17 +1,16 @@
 import {
     PrimaryGeneratedColumn,
-    CreateDateColumn,
-    UpdateDateColumn,
     BaseEntity as TypeOrmBaseEntity,
+    Column,
 } from 'typeorm';
 
 export abstract class ModelBase extends TypeOrmBaseEntity {
     @PrimaryGeneratedColumn('uuid')
-    id: string;
+    id!: string;
 
-    @CreateDateColumn({ type: 'timestamp' })
-    createdAt: Date;
+    @Column({ type: "datetime", default: () => "CURRENT_TIMESTAMP" })
+    createdAt!: Date;
 
-    @UpdateDateColumn({ type: 'timestamp' })
-    updatedAt: Date;
+    @Column({ type: "datetime", default: () => "CURRENT_TIMESTAMP" })
+    updatedAt!: Date;
 }

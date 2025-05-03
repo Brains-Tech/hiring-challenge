@@ -8,6 +8,25 @@
   },
   "routes": {
     "routesDir": "src/routes",
-    "middleware": "express"
+    "middleware": "express",
+    "authenticationModule": "./src/middleware/authentication.ts"
+  },
+  "securityDefinitions": {
+    "jwt": {
+      "type": "http",
+      "scheme": "bearer",
+      "bearerFormat": "JWT"
+    }
+  },
+  "authentication": {
+    "jwt": {
+      "name": "jwt",
+      "in": "header",
+      "schema": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
   }
 }

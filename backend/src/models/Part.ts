@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from "typeorm";
+import { Entity, Column, ManyToOne } from "typeorm";
 import { Equipment } from "./Equipment";
 
 import { ModelBase } from "./ModelBase";
@@ -35,10 +35,4 @@ export class Part extends ModelBase {
 
     @Column()
     equipmentId!: string;
-
-    @Column({ type: "datetime", default: () => "CURRENT_TIMESTAMP" })
-    createdAt!: Date;
-
-    @Column({ type: "datetime", default: () => "CURRENT_TIMESTAMP" })
-    updatedAt!: Date;
 } 

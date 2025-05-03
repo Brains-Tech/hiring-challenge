@@ -142,8 +142,6 @@ describe('Equipment Controller Integration Tests', () => {
         areaId: testArea.id
       };
 
-      console.log('newEquipment', newEquipment);
-
       const response = await request(app)
         .post('/equipment')
         .send(newEquipment)
