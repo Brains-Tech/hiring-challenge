@@ -293,6 +293,66 @@
 				"type": "object",
 				"description": "Make all properties in T optional"
 			},
+			"MaintenanceRecurrenceEnum": {
+				"enum": [
+					"none",
+					"monthly",
+					"quarterly",
+					"semiannual",
+					"annual"
+				],
+				"type": "string"
+			},
+			"Maintenance": {
+				"properties": {
+					"id": {
+						"type": "string"
+					},
+					"createdAt": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"updatedAt": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"title": {
+						"type": "string"
+					},
+					"scheduledDate": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"recurrence": {
+						"$ref": "#/components/schemas/MaintenanceRecurrenceEnum"
+					},
+					"dueDate": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"description": {
+						"type": "string"
+					},
+					"part": {
+						"$ref": "#/components/schemas/Part"
+					},
+					"partId": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"id",
+					"createdAt",
+					"updatedAt",
+					"title",
+					"recurrence",
+					"dueDate",
+					"part",
+					"partId"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
 			"Pick_Equipment.Exclude_keyofEquipment.id-or-createdAt-or-updatedAt__": {
 				"properties": {
 					"name": {
@@ -774,6 +834,102 @@
 					{
 						"in": "path",
 						"name": "partId",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/maintenance": {
+			"get": {
+				"operationId": "GetMaintenances",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/Maintenance"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"Maintenance"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": []
+			},
+			"post": {
+				"operationId": "CreateEquipment",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Maintenance"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"Maintenance"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {}
+						}
+					}
+				}
+			}
+		},
+		"/maintenance/{maintenanceId}": {
+			"get": {
+				"operationId": "GetMaintenanceById",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Maintenance"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"Maintenance"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "maintenanceId",
 						"required": true,
 						"schema": {
 							"type": "string"

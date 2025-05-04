@@ -1,4 +1,4 @@
-import { Body, Controller, Get, NoSecurity, Post, Route, Security, Tags } from "tsoa";
+import { Body, Controller, Get, Post, Route, Security, Tags } from "tsoa";
 import { InvalidForeignKeyError } from "../errors/InvalidForeignKeyError";
 import { InvalidDataError } from "../errors/InvalidDataError";
 import { AuthService } from "../services/AuthService";
@@ -21,7 +21,6 @@ export class AuthController extends Controller {
     }
 
 
-    @NoSecurity()
     @Post("/register")
     public async register(@Body() requestBody: Omit<User, "id" | "createdAt" | "updatedAt">): Promise<User> {
         try {
@@ -39,7 +38,7 @@ export class AuthController extends Controller {
         }
     }
 
-    @NoSecurity()
+
     @Post("/login")
     public async login(@Body() requestBody: Omit<User, "id" | "createdAt" | "updatedAt" | "name">): Promise<{
         token: string;

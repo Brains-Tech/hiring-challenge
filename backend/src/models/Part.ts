@@ -35,4 +35,5 @@ export class Part extends ModelBase {
 
     @Column()
     equipmentId!: string;
+    
 } 

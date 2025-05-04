@@ -1,3 +1,4 @@
+import { Maintenance } from "../models/Maintenance";
 import { Area } from "../models/Area";
 import { Equipment } from "../models/Equipment";
 import { Part } from "../models/Part";
@@ -11,7 +12,7 @@ export const AppDataSource = new DataSource({
     database: "opwell.sqlite",
     synchronize: true, // Set to false in production
     logging: true,
-    entities: [Plant, Area, Equipment, Part, User],
+    entities: [Plant, Area, Equipment, Part, User, Maintenance],
     migrations: [],
     subscribers: [],
 }); 
