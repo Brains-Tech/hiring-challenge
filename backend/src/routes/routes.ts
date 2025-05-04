@@ -8,7 +8,7 @@ import { PlantController } from './../controllers/PlantController';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { PartController } from './../controllers/PartController';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-import { MaintenanceController } from './../controllers/MaintenanceService';
+import { MaintenanceController } from './../controllers/MaintenanceController';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { EquipmentController } from './../controllers/EquipmentController';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
@@ -134,6 +134,18 @@ const models: TsoaRoute.Models = {
             "dueDate": {"dataType":"datetime","required":true},
             "description": {"dataType":"string"},
             "part": {"ref":"Part","required":true},
+            "partId": {"dataType":"string","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "CreateUpdateMaintenanceDTO": {
+        "dataType": "refObject",
+        "properties": {
+            "title": {"dataType":"string","required":true},
+            "recurrence": {"ref":"MaintenanceRecurrenceEnum","required":true},
+            "scheduledDate": {"dataType":"datetime"},
+            "description": {"dataType":"string"},
             "partId": {"dataType":"string","required":true},
         },
         "additionalProperties": false,
@@ -575,26 +587,89 @@ export function RegisterRoutes(app: Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-        const argsMaintenanceController_createEquipment: Record<string, TsoaRoute.ParameterSchema> = {
-                requestBody: {"in":"body","name":"requestBody","required":true,"dataType":"any"},
+        const argsMaintenanceController_createMaintenance: Record<string, TsoaRoute.ParameterSchema> = {
+                requestBody: {"in":"body","name":"requestBody","required":true,"ref":"CreateUpdateMaintenanceDTO"},
         };
         app.post('/maintenance',
             authenticateMiddleware([{"jwt":[]}]),
             ...(fetchMiddlewares<RequestHandler>(MaintenanceController)),
-            ...(fetchMiddlewares<RequestHandler>(MaintenanceController.prototype.createEquipment)),
+            ...(fetchMiddlewares<RequestHandler>(MaintenanceController.prototype.createMaintenance)),
 
-            async function MaintenanceController_createEquipment(request: ExRequest, response: ExResponse, next: any) {
+            async function MaintenanceController_createMaintenance(request: ExRequest, response: ExResponse, next: any) {
 
             // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 
             let validatedArgs: any[] = [];
             try {
-                validatedArgs = templateService.getValidatedArgs({ args: argsMaintenanceController_createEquipment, request, response });
+                validatedArgs = templateService.getValidatedArgs({ args: argsMaintenanceController_createMaintenance, request, response });
 
                 const controller = new MaintenanceController();
 
               await templateService.apiHandler({
-                methodName: 'createEquipment',
+                methodName: 'createMaintenance',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsMaintenanceController_updateMaintenance: Record<string, TsoaRoute.ParameterSchema> = {
+                maintenanceId: {"in":"path","name":"maintenanceId","required":true,"dataType":"string"},
+                requestBody: {"in":"body","name":"requestBody","required":true,"ref":"CreateUpdateMaintenanceDTO"},
+        };
+        app.put('/maintenance/:maintenanceId',
+            authenticateMiddleware([{"jwt":[]}]),
+            ...(fetchMiddlewares<RequestHandler>(MaintenanceController)),
+            ...(fetchMiddlewares<RequestHandler>(MaintenanceController.prototype.updateMaintenance)),
+
+            async function MaintenanceController_updateMaintenance(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsMaintenanceController_updateMaintenance, request, response });
+
+                const controller = new MaintenanceController();
+
+              await templateService.apiHandler({
+                methodName: 'updateMaintenance',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsMaintenanceController_deleteMaintenance: Record<string, TsoaRoute.ParameterSchema> = {
+                maintenanceId: {"in":"path","name":"maintenanceId","required":true,"dataType":"string"},
+        };
+        app.delete('/maintenance/:maintenanceId',
+            authenticateMiddleware([{"jwt":[]}]),
+            ...(fetchMiddlewares<RequestHandler>(MaintenanceController)),
+            ...(fetchMiddlewares<RequestHandler>(MaintenanceController.prototype.deleteMaintenance)),
+
+            async function MaintenanceController_deleteMaintenance(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsMaintenanceController_deleteMaintenance, request, response });
+
+                const controller = new MaintenanceController();
+
+              await templateService.apiHandler({
+                methodName: 'deleteMaintenance',
                 controller,
                 response,
                 next,

@@ -353,6 +353,33 @@
 				"type": "object",
 				"additionalProperties": false
 			},
+			"CreateUpdateMaintenanceDTO": {
+				"properties": {
+					"title": {
+						"type": "string"
+					},
+					"recurrence": {
+						"$ref": "#/components/schemas/MaintenanceRecurrenceEnum"
+					},
+					"scheduledDate": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"description": {
+						"type": "string"
+					},
+					"partId": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"title",
+					"recurrence",
+					"partId"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
 			"Pick_Equipment.Exclude_keyofEquipment.id-or-createdAt-or-updatedAt__": {
 				"properties": {
 					"name": {
@@ -871,7 +898,7 @@
 				"parameters": []
 			},
 			"post": {
-				"operationId": "CreateEquipment",
+				"operationId": "CreateMaintenance",
 				"responses": {
 					"200": {
 						"description": "Ok",
@@ -897,7 +924,9 @@
 					"required": true,
 					"content": {
 						"application/json": {
-							"schema": {}
+							"schema": {
+								"$ref": "#/components/schemas/CreateUpdateMaintenanceDTO"
+							}
 						}
 					}
 				}
@@ -916,6 +945,75 @@
 								}
 							}
 						}
+					}
+				},
+				"tags": [
+					"Maintenance"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "maintenanceId",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			},
+			"put": {
+				"operationId": "UpdateMaintenance",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Maintenance"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"Maintenance"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "maintenanceId",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/CreateUpdateMaintenanceDTO"
+							}
+						}
+					}
+				}
+			},
+			"delete": {
+				"operationId": "DeleteMaintenance",
+				"responses": {
+					"204": {
+						"description": "No content"
 					}
 				},
 				"tags": [
