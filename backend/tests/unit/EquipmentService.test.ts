@@ -7,12 +7,50 @@ import { InvalidForeignKeyError } from "../../src/errors/InvalidForeignKeyError"
 import { InvalidDataError } from "../../src/errors/InvalidDataError";
 import { DependencyExistsError } from "../../src/errors/DependencyExistsError";
 import { describe, it, expect, beforeEach, jest } from "@jest/globals";
+import { EquipmentAreaService } from "../../src/services/EquipmentAreaService";
 
 jest.mock("../../src/config/database-context");
+jest.mock("../../src/services/EquipmentAreaService");
 
 describe("EquipmentService", () => {
     let equipmentService: EquipmentService;
     let mockRepository: jest.Mocked<Repository<Equipment>>;
+    let mockEquipmentAreaService: jest.Mocked<EquipmentAreaService>;
+
+    // Helper function to create a mock Equipment
+    const createMockEquipment = (overrides = {}) => {
+        return {
+            id: "1",
+            name: "Equipment 1",
+            manufacturer: "Test Manufacturer",
+            serialNumber: "123456",
+            initialOperationsDate: new Date(),
+            areaId: "area1",
+            areaRelations: [], // Required in the updated model
+            parts: [],
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            ...overrides
+        };
+    };
+
+    // Helper function to create equipment data for creation/update
+    const createEquipmentData = (overrides = {}) => {
+        return {
+            name: "New Equipment",
+            manufacturer: "Test Manufacturer",
+            serialNumber: "123456",
+            initialOperationsDate: new Date(),
+            areaId: "area1",
+            areaRelations: [],
+            ...overrides
+        };
+    };
+
+    // Helper function to create a mock QueryFailedError
+    const createQueryFailedError = (message: string) => {
+        return new QueryFailedError("query", undefined, new Error(message));
+    };
 
     beforeEach(() => {
         mockRepository = {
@@ -21,6 +59,16 @@ describe("EquipmentService", () => {
             create: jest.fn(),
             save: jest.fn(),
             remove: jest.fn(),
+            manager: {
+                transaction: jest.fn()
+            }
+        } as any;
+
+        mockEquipmentAreaService = {
+            assignEquipmentToAreas: jest.fn(),
+            getEquipmentAreas: jest.fn(),
+            getPrimaryArea: jest.fn(),
+            getAreaEquipments: jest.fn()
         } as any;
 
         (DatabaseContext.getInstance as jest.Mock).mockReturnValue({
@@ -28,43 +76,27 @@ describe("EquipmentService", () => {
         });
 
         equipmentService = new EquipmentService();
+        // Set the mock EquipmentAreaService
+        (equipmentService as any).equipmentAreaService = mockEquipmentAreaService;
     });
 
     describe("findAll", () => {
         it("should return all equipment with their relations", async () => {
-            const mockEquipment = [{
-                id: "1",
-                name: "Equipment 1",
-                manufacturer: "Test Manufacturer",
-                serialNumber: "123456",
-                initialOperationsDate: new Date(),
-                areaId: "area1",
-                createdAt: new Date(),
-                updatedAt: new Date()
-            }];
+            const mockEquipment = [createMockEquipment()];
             mockRepository.find.mockResolvedValue(mockEquipment);
 
             const result = await equipmentService.findAll();
 
             expect(result).toEqual(mockEquipment);
             expect(mockRepository.find).toHaveBeenCalledWith({
-                relations: ["area", "parts"]
+                relations: ["area", "parts", "areaRelations", "areaRelations.area"]
             });
         });
     });
 
     describe("findById", () => {
         it("should return equipment when found", async () => {
-            const mockEquipment = {
-                id: "1",
-                name: "Equipment 1",
-                manufacturer: "Test Manufacturer",
-                serialNumber: "123456",
-                initialOperationsDate: new Date(),
-                areaId: "area1",
-                createdAt: new Date(),
-                updatedAt: new Date()
-            };
+            const mockEquipment = createMockEquipment();
             mockRepository.findOne.mockResolvedValue(mockEquipment);
 
             const result = await equipmentService.findById("1");
@@ -86,23 +118,10 @@ describe("EquipmentService", () => {
     });
 
     describe("create", () => {
-        const mockCreatedAt = new Date();
-        const mockUpdatedAt = new Date();
-        const equipmentData = {
-            name: "New Equipment",
-            manufacturer: "Test Manufacturer",
-            serialNumber: "123456",
-            initialOperationsDate: new Date(),
-            areaId: "area1"
-        };
-
         it("should create and return new equipment", async () => {
-            const mockEquipment = {
-                ...equipmentData,
-                id: "1",
-                createdAt: mockCreatedAt,
-                updatedAt: mockUpdatedAt
-            };
+            const equipmentData = createEquipmentData();
+            const mockEquipment = createMockEquipment(equipmentData);
+            
             mockRepository.create.mockReturnValue(mockEquipment);
             mockRepository.save.mockResolvedValue(mockEquipment);
             mockRepository.findOne.mockResolvedValue(mockEquipment);
@@ -115,15 +134,11 @@ describe("EquipmentService", () => {
         });
 
         it("should throw InvalidForeignKeyError when save fails with foreign key error", async () => {
-            const mockEquipment = {
-                ...equipmentData,
-                id: "1",
-                createdAt: mockCreatedAt,
-                updatedAt: mockUpdatedAt
-            };
-            const queryError = new QueryFailedError("query", undefined, new Error("FOREIGN KEY"));
+            const equipmentData = createEquipmentData();
+            const mockEquipment = createMockEquipment(equipmentData);
+            
             mockRepository.create.mockReturnValue(mockEquipment);
-            mockRepository.save.mockRejectedValue(queryError);
+            mockRepository.save.mockRejectedValue(createQueryFailedError("FOREIGN KEY"));
 
             await expect(equipmentService.create(equipmentData))
                 .rejects
@@ -131,14 +146,11 @@ describe("EquipmentService", () => {
         });
 
         it("should throw InvalidDataError when save fails with other QueryFailedError", async () => {
-            const mockEquipment = {
-                ...equipmentData,
-                id: "1",
-                createdAt: mockCreatedAt,
-                updatedAt: mockUpdatedAt
-            };
+            const equipmentData = createEquipmentData();
+            const mockEquipment = createMockEquipment(equipmentData);
+            
             mockRepository.create.mockReturnValue(mockEquipment);
-            mockRepository.save.mockRejectedValue(new QueryFailedError("query", undefined, new Error("error")));
+            mockRepository.save.mockRejectedValue(createQueryFailedError("error"));
 
             await expect(equipmentService.create(equipmentData))
                 .rejects
@@ -149,28 +161,21 @@ describe("EquipmentService", () => {
     describe("update", () => {
         const equipmentId = "1";
         const updateData = { name: "Updated Equipment" };
-        const mockCreatedAt = new Date();
-        const mockUpdatedAt = new Date();
 
         it("should update and return the equipment", async () => {
-            const existingEquipment = {
-                id: equipmentId,
-                name: "Old Name",
-                manufacturer: "Test Manufacturer",
-                serialNumber: "123456",
-                initialOperationsDate: new Date(),
-                areaId: "area1",
-                createdAt: mockCreatedAt,
-                updatedAt: mockUpdatedAt
-            };
-            const updatedEquipment = { ...existingEquipment, ...updateData };
+            const existingEquipment = createMockEquipment();
+            const updatedEquipment = createMockEquipment({ ...existingEquipment, ...updateData });
+            
             mockRepository.findOne.mockResolvedValue(existingEquipment);
             mockRepository.save.mockResolvedValue(updatedEquipment);
 
             const result = await equipmentService.update(equipmentId, updateData);
 
             expect(result).toEqual(updatedEquipment);
-            expect(mockRepository.save).toHaveBeenCalledWith(updatedEquipment);
+            expect(mockRepository.save).toHaveBeenCalledWith(expect.objectContaining({
+                ...existingEquipment,
+                ...updateData
+            }));
         });
 
         it("should throw EquipmentNotFoundError when equipment doesn't exist", async () => {
@@ -182,19 +187,10 @@ describe("EquipmentService", () => {
         });
 
         it("should throw InvalidForeignKeyError when save fails with foreign key error", async () => {
-            const existingEquipment = {
-                id: equipmentId,
-                name: "Old Name",
-                manufacturer: "Test Manufacturer",
-                serialNumber: "123456",
-                initialOperationsDate: new Date(),
-                areaId: "area1",
-                createdAt: mockCreatedAt,
-                updatedAt: mockUpdatedAt
-            };
+            const existingEquipment = createMockEquipment();
+            
             mockRepository.findOne.mockResolvedValue(existingEquipment);
-            const queryError = new QueryFailedError("query", undefined, new Error("FOREIGN KEY"));
-            mockRepository.save.mockRejectedValue(queryError);
+            mockRepository.save.mockRejectedValue(createQueryFailedError("FOREIGN KEY"));
 
             await expect(equipmentService.update(equipmentId, updateData))
                 .rejects
@@ -202,18 +198,10 @@ describe("EquipmentService", () => {
         });
 
         it("should throw InvalidDataError when save fails with other QueryFailedError", async () => {
-            const existingEquipment = {
-                id: equipmentId,
-                name: "Old Name",
-                manufacturer: "Test Manufacturer",
-                serialNumber: "123456",
-                initialOperationsDate: new Date(),
-                areaId: "area1",
-                createdAt: mockCreatedAt,
-                updatedAt: mockUpdatedAt
-            };
+            const existingEquipment = createMockEquipment();
+            
             mockRepository.findOne.mockResolvedValue(existingEquipment);
-            mockRepository.save.mockRejectedValue(new QueryFailedError("query", undefined, new Error("error")));
+            mockRepository.save.mockRejectedValue(createQueryFailedError("error"));
 
             await expect(equipmentService.update(equipmentId, updateData))
                 .rejects
@@ -225,16 +213,8 @@ describe("EquipmentService", () => {
         const equipmentId = "1";
 
         it("should delete the equipment successfully", async () => {
-            const mockEquipment = {
-                id: equipmentId,
-                name: "Equipment to Delete",
-                manufacturer: "Test Manufacturer",
-                serialNumber: "123456",
-                initialOperationsDate: new Date(),
-                areaId: "area1",
-                createdAt: new Date(),
-                updatedAt: new Date()
-            };
+            const mockEquipment = createMockEquipment({ id: equipmentId });
+            
             mockRepository.findOne.mockResolvedValue(mockEquipment);
             mockRepository.remove.mockResolvedValue(mockEquipment);
 
@@ -252,22 +232,83 @@ describe("EquipmentService", () => {
         });
 
         it("should throw DependencyExistsError when delete fails with QueryFailedError", async () => {
-            const mockEquipment = {
-                id: equipmentId,
-                name: "Equipment with Dependencies",
-                manufacturer: "Test Manufacturer",
-                serialNumber: "123456",
-                initialOperationsDate: new Date(),
-                areaId: "area1",
-                createdAt: new Date(),
-                updatedAt: new Date()
-            };
+            const mockEquipment = createMockEquipment({ id: equipmentId });
+            
             mockRepository.findOne.mockResolvedValue(mockEquipment);
-            mockRepository.remove.mockRejectedValue(new QueryFailedError("query", undefined, new Error("error")));
+            mockRepository.remove.mockRejectedValue(createQueryFailedError("error"));
 
             await expect(equipmentService.delete(equipmentId))
                 .rejects
                 .toThrow(DependencyExistsError);
         });
     });
-}); 
+
+    describe("assignToAreas", () => {
+        const equipmentId = "1";
+        const areaIds = ["area1", "area2"];
+        const primaryAreaId = "area1";
+
+        it("should assign equipment to areas and return updated equipment", async () => {
+            const mockEquipment = createMockEquipment({ id: equipmentId });
+            
+            mockEquipmentAreaService.assignEquipmentToAreas.mockResolvedValue(undefined);
+            mockRepository.findOne.mockResolvedValue(mockEquipment);
+
+            const result = await equipmentService.assignToAreas(equipmentId, areaIds, primaryAreaId);
+
+            expect(result).toEqual(mockEquipment);
+            expect(mockEquipmentAreaService.assignEquipmentToAreas).toHaveBeenCalledWith(
+                equipmentId, areaIds, primaryAreaId
+            );
+            expect(mockRepository.findOne).toHaveBeenCalledWith({
+                where: { id: equipmentId },
+                relations: ["area", "parts"]
+            });
+        });
+
+        it("should throw EquipmentNotFoundError when equipment doesn't exist during retrieval", async () => {
+            mockEquipmentAreaService.assignEquipmentToAreas.mockResolvedValue(undefined);
+            mockRepository.findOne.mockResolvedValue(null);
+
+            await expect(equipmentService.assignToAreas(equipmentId, areaIds, primaryAreaId))
+                .rejects
+                .toThrow(EquipmentNotFoundError);
+        });
+
+        it("should propagate errors from equipmentAreaService.assignEquipmentToAreas", async () => {
+            mockEquipmentAreaService.assignEquipmentToAreas.mockRejectedValue(new InvalidDataError("test error"));
+
+            await expect(equipmentService.assignToAreas(equipmentId, areaIds, primaryAreaId))
+                .rejects
+                .toThrow(InvalidDataError);
+        });
+    });
+
+    describe("getEquipmentAreas", () => {
+        const equipmentId = "1";
+        const mockAreas = [{ id: "area1", name: "Area 1" }, { id: "area2", name: "Area 2" }];
+
+        it("should return areas for the equipment", async () => {
+            mockEquipmentAreaService.getEquipmentAreas.mockResolvedValue(mockAreas);
+
+            const result = await equipmentService.getEquipmentAreas(equipmentId);
+
+            expect(result).toEqual(mockAreas);
+            expect(mockEquipmentAreaService.getEquipmentAreas).toHaveBeenCalledWith(equipmentId);
+        });
+    });
+
+    describe("findByArea", () => {
+        const areaId = "area1";
+        const mockEquipmentList = [createMockEquipment()];
+
+        it("should return equipment for the area", async () => {
+            mockEquipmentAreaService.getAreaEquipments.mockResolvedValue(mockEquipmentList);
+
+            const result = await equipmentService.findByArea(areaId);
+
+            expect(result).toEqual(mockEquipmentList);
+            expect(mockEquipmentAreaService.getAreaEquipments).toHaveBeenCalledWith(areaId);
+        });
+    });
+});
