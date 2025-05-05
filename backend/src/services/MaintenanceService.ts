@@ -9,6 +9,9 @@ import { MaintenanceNotFoundError } from "../errors/MaintenanceNotFoundError";
 import { addDateInterval } from "../utils/addDateInterval";
 import { DependencyExistsError } from "../errors/DependencyExistsError";
 import { CreateUpdateMaintenanceDTO } from "../dtos/CreateUpdateMaintenance.dto";
+import { IMaintenanceFormatted } from "../interfaces/IMaintenanceFormatted";
+
+
 
 export class MaintenanceService {
     private partRepository: Repository<Part>;
@@ -19,8 +22,8 @@ export class MaintenanceService {
         this.maintenanceRepository = DatabaseContext.getInstance().getRepository(Maintenance);
     }
 
-    public async findAll(): Promise<Maintenance[]> {
-        return this.maintenanceRepository.find({
+    public async findAll(): Promise<IMaintenanceFormatted[]> {
+        const maintenances = await this.maintenanceRepository.find({
             relations: [
                 "part",
                 "part.equipment",
@@ -28,9 +31,11 @@ export class MaintenanceService {
                 "part.equipment.area.plant",
             ],
         });
+
+        return maintenances.map((maintenance) => this.formatMaintenanceData(maintenance));
     }
 
-    public async findById(id: string): Promise<Maintenance> {
+    public async findById(id: string): Promise<IMaintenanceFormatted> {
         const maintenance = await this.maintenanceRepository.findOne({
             where: { id },
             relations: [
@@ -45,11 +50,11 @@ export class MaintenanceService {
             throw new MaintenanceNotFoundError();
         }
 
-        return maintenance;
+        return this.formatMaintenanceData(maintenance);
     }
 
 
-    public async create(data: CreateUpdateMaintenanceDTO): Promise<Maintenance> {
+    public async create(data: CreateUpdateMaintenanceDTO): Promise<IMaintenanceFormatted> {
         try {
             const part = await this.partRepository.findOne({
                 where: { id: data.partId },
@@ -82,9 +87,21 @@ export class MaintenanceService {
     }
 
 
-    public async update(id: string, data: CreateUpdateMaintenanceDTO): Promise<Maintenance> {
+    public async update(id: string, data: CreateUpdateMaintenanceDTO): Promise<IMaintenanceFormatted> {
         try {
-            const maintenance = await this.findById(id);
+            const maintenance = await this.maintenanceRepository.findOne({
+                where: { id },
+                relations: [
+                    "part",
+                    "part.equipment",
+                    "part.equipment.area",
+                    "part.equipment.area.plant",
+                ],
+            });
+
+            if (!maintenance) {
+                throw new MaintenanceNotFoundError();
+            }
 
             if (this.hasScheduledDateConflict(data.recurrence, data.scheduledDate)) {
                 throw new InvalidDataError("Inconsistent scheduledDate and recurrence values");
@@ -136,7 +153,13 @@ export class MaintenanceService {
         }
     }
 
+    public async getAllParts(): Promise<{ id: string; name: string }[]> {
+        const parts = await this.partRepository.find({
+            relations: ["equipment"]
+        });
 
+        return this.formatPartsToMaintenance(parts);
+    }
 
 
     private calculateDueDate(
@@ -144,14 +167,22 @@ export class MaintenanceService {
         scheduledDate: Date | undefined,
         part: Part
     ): Date {
-        if (recurrence === MaintenanceRecurrenceEnum.NONE && scheduledDate) {
-            return scheduledDate;
-        }
-
         const baseDate = part.installationDate || part.equipment?.initialOperationsDate;
 
         if (!baseDate) {
             throw new InvalidDataError("No base date to calculate due date");
+        }
+
+        if (recurrence === MaintenanceRecurrenceEnum.NONE) {
+            if (!scheduledDate) {
+                throw new InvalidDataError("Scheduled date must be provided for 'NONE' recurrence");
+            }
+
+            if (scheduledDate < baseDate) {
+                throw new InvalidDataError("Scheduled date cannot be before installation date");
+            }
+
+            return scheduledDate;
         }
 
         const recurrenceMap = new Map<MaintenanceRecurrenceEnum, (date: Date) => Date>([
@@ -178,14 +209,43 @@ export class MaintenanceService {
         );
     }
 
+    private formatPartsToMaintenance(parts: Part[]): { id: string; name: string }[] {
+        return parts.map((part) => {
+            return {
+                id: part.id,
+                name: part.name,
+            }
+        })
+    }
 
-
-
-
-
-
-
-
-
-
+    private formatMaintenanceData(maintenance: Maintenance): IMaintenanceFormatted {
+        return {
+            id: maintenance.id,
+            createdAt: maintenance.createdAt,
+            updatedAt: maintenance.updatedAt,
+            title: maintenance.title,
+            scheduledDate: maintenance.scheduledDate,
+            recurrence: maintenance.recurrence,
+            dueDate: maintenance.dueDate,
+            description: maintenance.description,
+            part: {
+                id: maintenance.part.id,
+                name: maintenance.part.name,
+                installationDate: maintenance.part.installationDate,
+            },
+            equipment: {
+                id: maintenance?.part?.equipment?.id || '',
+                name: maintenance?.part?.equipment?.name || '',
+                initialOperationsDate: maintenance?.part?.equipment?.initialOperationsDate || new Date(),
+            },
+            area: {
+                id: maintenance?.part?.equipment?.area?.id || '',
+                name: maintenance?.part?.equipment?.area?.name || '',
+            },
+            plant: {
+                id: maintenance?.part?.equipment?.area?.plant?.id || '',
+                name: maintenance?.part?.equipment?.area?.plant?.name || '',
+            }
+        };
+    }
 }

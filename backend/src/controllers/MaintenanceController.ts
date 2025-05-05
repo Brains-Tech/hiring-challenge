@@ -2,9 +2,9 @@ import { Body, Controller, Delete, Get, Path, Post, Put, Route, Security, Tags }
 import { InvalidForeignKeyError } from "../errors/InvalidForeignKeyError";
 import { InvalidDataError } from "../errors/InvalidDataError";
 import { MaintenanceService } from "../services/MaintenanceService";
-import { Maintenance } from "../models/Maintenance";
 import { MaintenanceNotFoundError } from "../errors/MaintenanceNotFoundError";
 import { CreateUpdateMaintenanceDTO } from "../dtos/CreateUpdateMaintenance.dto";
+import { IMaintenanceFormatted } from "../interfaces/IMaintenanceFormatted";
 
 
 @Route("maintenance")
@@ -20,16 +20,16 @@ export class MaintenanceController extends Controller {
 
     @Security("jwt")
     @Get()
-    public async getMaintenances(): Promise<Maintenance[]> {
+    public async getMaintenances(): Promise<IMaintenanceFormatted[]> {
         return this.maintenanceService.findAll();
     }
 
 
     @Security("jwt")
     @Get("{maintenanceId}")
-    public async getMaintenanceById(@Path() maintenanceId: string): Promise<Maintenance> {
+    public async getMaintenanceById(@Path() maintenanceId: string): Promise<IMaintenanceFormatted> {
         try {
-            return await this.maintenanceService.findById(maintenanceId);
+            return this.maintenanceService.findById(maintenanceId);
         } catch (error) {
             if (error instanceof MaintenanceNotFoundError) {
                 this.setStatus(MaintenanceNotFoundError.httpStatusCode);
@@ -41,7 +41,7 @@ export class MaintenanceController extends Controller {
 
     @Security("jwt")
     @Post()
-    public async createMaintenance(@Body() requestBody: CreateUpdateMaintenanceDTO): Promise<Maintenance> {
+    public async createMaintenance(@Body() requestBody: CreateUpdateMaintenanceDTO): Promise<IMaintenanceFormatted> {
 
         try {
             return this.maintenanceService.create(requestBody);
@@ -66,7 +66,7 @@ export class MaintenanceController extends Controller {
     public async updateMaintenance(
         @Path() maintenanceId: string,
         @Body() requestBody: CreateUpdateMaintenanceDTO
-    ): Promise<Maintenance> {
+    ): Promise<IMaintenanceFormatted> {
         try {
             return this.maintenanceService.update(maintenanceId, requestBody);
         } catch (error) {
@@ -97,6 +97,20 @@ export class MaintenanceController extends Controller {
         } catch (error) {
             if (error instanceof MaintenanceNotFoundError) {
                 this.setStatus(MaintenanceNotFoundError.httpStatusCode);
+                throw error;
+            }
+            throw error;
+        }
+    }
+
+    @Security("jwt")
+    @Get("parts")
+    public async getParts(): Promise<{ id: string; name: string }[]> {
+        try {
+            return this.maintenanceService.getAllParts();
+        } catch (error) {
+            if (error instanceof InvalidForeignKeyError) {
+                this.setStatus(InvalidForeignKeyError.httpStatusCode);
                 throw error;
             }
             throw error;

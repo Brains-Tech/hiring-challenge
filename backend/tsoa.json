@@ -5,29 +5,23 @@
   "spec": {
     "outputDirectory": "public",
     "specVersion": 3,
-    "nullable": true
+    "nullable": true,
+    "securityDefinitions": {
+      "jwt": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "security": [
+      {
+        "jwt": []
+      }
+    ]
   },
   "routes": {
     "routesDir": "src/routes",
     "middleware": "express",
     "authenticationModule": "./src/middleware/authentication.ts"
-  },
-  "securityDefinitions": {
-    "jwt": {
-      "type": "http",
-      "scheme": "bearer",
-      "bearerFormat": "JWT"
-    }
-  },
-  "authentication": {
-    "jwt": {
-      "name": "jwt",
-      "in": "header",
-      "schema": {
-        "type": "http",
-        "scheme": "bearer",
-        "bearerFormat": "JWT"
-      }
-    }
   }
 }

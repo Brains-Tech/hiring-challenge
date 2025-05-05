@@ -122,7 +122,7 @@ const models: TsoaRoute.Models = {
         "enums": ["none","monthly","quarterly","semiannual","annual"],
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "Maintenance": {
+    "IMaintenanceFormatted": {
         "dataType": "refObject",
         "properties": {
             "id": {"dataType":"string","required":true},
@@ -133,8 +133,10 @@ const models: TsoaRoute.Models = {
             "recurrence": {"ref":"MaintenanceRecurrenceEnum","required":true},
             "dueDate": {"dataType":"datetime","required":true},
             "description": {"dataType":"string"},
-            "part": {"ref":"Part","required":true},
-            "partId": {"dataType":"string","required":true},
+            "part": {"dataType":"nestedObjectLiteral","nestedProperties":{"installationDate":{"dataType":"datetime"},"name":{"dataType":"string","required":true},"id":{"dataType":"string","required":true}},"required":true},
+            "equipment": {"dataType":"nestedObjectLiteral","nestedProperties":{"initialOperationsDate":{"dataType":"datetime"},"name":{"dataType":"string","required":true},"id":{"dataType":"string","required":true}},"required":true},
+            "area": {"dataType":"nestedObjectLiteral","nestedProperties":{"name":{"dataType":"string","required":true},"id":{"dataType":"string","required":true}},"required":true},
+            "plant": {"dataType":"nestedObjectLiteral","nestedProperties":{"name":{"dataType":"string","required":true},"id":{"dataType":"string","required":true}},"required":true},
         },
         "additionalProperties": false,
     },
@@ -670,6 +672,36 @@ export function RegisterRoutes(app: Router) {
 
               await templateService.apiHandler({
                 methodName: 'deleteMaintenance',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        const argsMaintenanceController_getParts: Record<string, TsoaRoute.ParameterSchema> = {
+        };
+        app.get('/maintenance/parts',
+            authenticateMiddleware([{"jwt":[]}]),
+            ...(fetchMiddlewares<RequestHandler>(MaintenanceController)),
+            ...(fetchMiddlewares<RequestHandler>(MaintenanceController.prototype.getParts)),
+
+            async function MaintenanceController_getParts(request: ExRequest, response: ExResponse, next: any) {
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args: argsMaintenanceController_getParts, request, response });
+
+                const controller = new MaintenanceController();
+
+              await templateService.apiHandler({
+                methodName: 'getParts',
                 controller,
                 response,
                 next,

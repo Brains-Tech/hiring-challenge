@@ -303,7 +303,7 @@
 				],
 				"type": "string"
 			},
-			"Maintenance": {
+			"IMaintenanceFormatted": {
 				"properties": {
 					"id": {
 						"type": "string"
@@ -334,10 +334,72 @@
 						"type": "string"
 					},
 					"part": {
-						"$ref": "#/components/schemas/Part"
+						"properties": {
+							"installationDate": {
+								"type": "string",
+								"format": "date-time"
+							},
+							"name": {
+								"type": "string"
+							},
+							"id": {
+								"type": "string"
+							}
+						},
+						"required": [
+							"name",
+							"id"
+						],
+						"type": "object"
 					},
-					"partId": {
-						"type": "string"
+					"equipment": {
+						"properties": {
+							"initialOperationsDate": {
+								"type": "string",
+								"format": "date-time"
+							},
+							"name": {
+								"type": "string"
+							},
+							"id": {
+								"type": "string"
+							}
+						},
+						"required": [
+							"name",
+							"id"
+						],
+						"type": "object"
+					},
+					"area": {
+						"properties": {
+							"name": {
+								"type": "string"
+							},
+							"id": {
+								"type": "string"
+							}
+						},
+						"required": [
+							"name",
+							"id"
+						],
+						"type": "object"
+					},
+					"plant": {
+						"properties": {
+							"name": {
+								"type": "string"
+							},
+							"id": {
+								"type": "string"
+							}
+						},
+						"required": [
+							"name",
+							"id"
+						],
+						"type": "object"
 					}
 				},
 				"required": [
@@ -348,7 +410,9 @@
 					"recurrence",
 					"dueDate",
 					"part",
-					"partId"
+					"equipment",
+					"area",
+					"plant"
 				],
 				"type": "object",
 				"additionalProperties": false
@@ -564,7 +628,13 @@
 				"description": "Make all properties in T optional"
 			}
 		},
-		"securitySchemes": {}
+		"securitySchemes": {
+			"jwt": {
+				"type": "http",
+				"scheme": "bearer",
+				"bearerFormat": "JWT"
+			}
+		}
 	},
 	"info": {
 		"title": "backend",
@@ -879,7 +949,7 @@
 							"application/json": {
 								"schema": {
 									"items": {
-										"$ref": "#/components/schemas/Maintenance"
+										"$ref": "#/components/schemas/IMaintenanceFormatted"
 									},
 									"type": "array"
 								}
@@ -905,7 +975,7 @@
 						"content": {
 							"application/json": {
 								"schema": {
-									"$ref": "#/components/schemas/Maintenance"
+									"$ref": "#/components/schemas/IMaintenanceFormatted"
 								}
 							}
 						}
@@ -941,7 +1011,7 @@
 						"content": {
 							"application/json": {
 								"schema": {
-									"$ref": "#/components/schemas/Maintenance"
+									"$ref": "#/components/schemas/IMaintenanceFormatted"
 								}
 							}
 						}
@@ -974,7 +1044,7 @@
 						"content": {
 							"application/json": {
 								"schema": {
-									"$ref": "#/components/schemas/Maintenance"
+									"$ref": "#/components/schemas/IMaintenanceFormatted"
 								}
 							}
 						}
@@ -1034,6 +1104,47 @@
 						}
 					}
 				]
+			}
+		},
+		"/maintenance/parts": {
+			"get": {
+				"operationId": "GetParts",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"properties": {
+											"name": {
+												"type": "string"
+											},
+											"id": {
+												"type": "string"
+											}
+										},
+										"required": [
+											"name",
+											"id"
+										],
+										"type": "object"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"Maintenance"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": []
 			}
 		},
 		"/equipment": {

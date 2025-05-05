@@ -1,4 +1,4 @@
-import { MaintenanceRecurrenceEnum } from "src/models/Maintenance";
+import { MaintenanceRecurrenceEnum } from "../models/Maintenance";
 
 export interface CreateUpdateMaintenanceDTO {
     title: string;
