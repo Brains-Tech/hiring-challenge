@@ -14,13 +14,47 @@ describe("AreaService", () => {
     let areaService: AreaService;
     let mockRepository: jest.Mocked<Repository<Area>>;
 
+    // Helper function to create a mock Area with all required properties
+    const createMockArea = (overrides = {}) => {
+        return {
+            id: "1",
+            name: "Area 1",
+            locationDescription: "Location 1",
+            plantId: "plant1",
+            plant: undefined,
+            // Added properties from the updated Area model
+            neighborRelations: [],
+            neighboredByRelations: [],
+            equipmentRelations: [],
+            getNeighborCount: jest.fn().mockReturnValue(0),
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            ...overrides
+        } as unknown as Area;
+    };
+
+    // Helper function to create area data for creation/update
+    const createAreaData = (overrides = {}) => {
+        return {
+            name: "New Area",
+            locationDescription: "Location 1",
+            plantId: "plant1",
+            ...overrides
+        };
+    };
+
+    // Helper function to create a mock QueryFailedError
+    const createQueryFailedError = (message: string) => {
+        return new QueryFailedError("query", undefined, new Error(message));
+    };
+
     beforeEach(() => {
         mockRepository = {
             find: jest.fn(),
             findOne: jest.fn(),
             create: jest.fn(),
             save: jest.fn(),
-            remove: jest.fn(),
+            remove: jest.fn()
         } as any;
 
         (DatabaseContext.getInstance as jest.Mock).mockReturnValue({
@@ -32,35 +66,29 @@ describe("AreaService", () => {
 
     describe("findAll", () => {
         it("should return all areas with their relations", async () => {
-            const mockAreas = [{
-                id: "1",
-                name: "Area 1",
-                locationDescription: "Location 1",
-                plantId: "plant1",
-                createdAt: new Date(),
-                updatedAt: new Date()
-            }];
+            const mockAreas = [createMockArea()];
             mockRepository.find.mockResolvedValue(mockAreas);
 
             const result = await areaService.findAll();
 
             expect(result).toEqual(mockAreas);
             expect(mockRepository.find).toHaveBeenCalledWith({
-                relations: ["plant", "equipment", "equipment.parts"]
+                relations: [
+                    "plant", 
+                    "equipment", 
+                    "equipment.parts",
+                    "neighborRelations",
+                    "neighborRelations.neighbor",
+                    "neighboredByRelations",
+                    "neighboredByRelations.area"
+                ]
             });
         });
     });
 
     describe("findById", () => {
         it("should return an area when found", async () => {
-            const mockArea = {
-                id: "1",
-                name: "Area 1",
-                locationDescription: "Location 1",
-                plantId: "plant1",
-                createdAt: new Date(),
-                updatedAt: new Date()
-            };
+            const mockArea = createMockArea();
             mockRepository.findOne.mockResolvedValue(mockArea);
 
             const result = await areaService.findById("1");
@@ -82,21 +110,10 @@ describe("AreaService", () => {
     });
 
     describe("create", () => {
-        const mockCreatedAt = new Date();
-        const mockUpdatedAt = new Date();
-        const areaData = {
-            name: "New Area",
-            locationDescription: "Location 1",
-            plantId: "plant1"
-        };
-
         it("should create and return a new area", async () => {
-            const mockArea = {
-                ...areaData,
-                id: "1",
-                createdAt: mockCreatedAt,
-                updatedAt: mockUpdatedAt
-            };
+            const areaData = createAreaData();
+            const mockArea = createMockArea(areaData);
+            
             mockRepository.create.mockReturnValue(mockArea);
             mockRepository.save.mockResolvedValue(mockArea);
             mockRepository.findOne.mockResolvedValue(mockArea);
@@ -109,15 +126,11 @@ describe("AreaService", () => {
         });
 
         it("should throw InvalidForeignKeyError when save fails with foreign key error", async () => {
-            const mockArea = {
-                ...areaData,
-                id: "1",
-                createdAt: mockCreatedAt,
-                updatedAt: mockUpdatedAt
-            };
-            const queryError = new QueryFailedError("query", undefined, new Error("FOREIGN KEY"));
+            const areaData = createAreaData();
+            const mockArea = createMockArea(areaData);
+            
             mockRepository.create.mockReturnValue(mockArea);
-            mockRepository.save.mockRejectedValue(queryError);
+            mockRepository.save.mockRejectedValue(createQueryFailedError("FOREIGN KEY"));
 
             await expect(areaService.create(areaData))
                 .rejects
@@ -125,14 +138,11 @@ describe("AreaService", () => {
         });
 
         it("should throw InvalidDataError when save fails with other QueryFailedError", async () => {
-            const mockArea = {
-                ...areaData,
-                id: "1",
-                createdAt: mockCreatedAt,
-                updatedAt: mockUpdatedAt
-            };
+            const areaData = createAreaData();
+            const mockArea = createMockArea(areaData);
+            
             mockRepository.create.mockReturnValue(mockArea);
-            mockRepository.save.mockRejectedValue(new QueryFailedError("query", undefined, new Error("error")));
+            mockRepository.save.mockRejectedValue(createQueryFailedError("error"));
 
             await expect(areaService.create(areaData))
                 .rejects
@@ -143,26 +153,21 @@ describe("AreaService", () => {
     describe("update", () => {
         const areaId = "1";
         const updateData = { name: "Updated Area" };
-        const mockCreatedAt = new Date();
-        const mockUpdatedAt = new Date();
 
         it("should update and return the area", async () => {
-            const existingArea = {
-                id: areaId,
-                name: "Old Name",
-                locationDescription: "Location 1",
-                plantId: "plant1",
-                createdAt: mockCreatedAt,
-                updatedAt: mockUpdatedAt
-            };
-            const updatedArea = { ...existingArea, ...updateData };
+            const existingArea = createMockArea();
+            const updatedArea = createMockArea({ ...existingArea, ...updateData });
+            
             mockRepository.findOne.mockResolvedValue(existingArea);
             mockRepository.save.mockResolvedValue(updatedArea);
 
             const result = await areaService.update(areaId, updateData);
 
             expect(result).toEqual(updatedArea);
-            expect(mockRepository.save).toHaveBeenCalledWith(updatedArea);
+            expect(mockRepository.save).toHaveBeenCalledWith(expect.objectContaining({
+                ...existingArea,
+                ...updateData
+            }));
         });
 
         it("should throw AreaNotFoundError when area doesn't exist", async () => {
@@ -174,16 +179,10 @@ describe("AreaService", () => {
         });
 
         it("should throw InvalidDataError when save fails with QueryFailedError", async () => {
-            const existingArea = {
-                id: areaId,
-                name: "Old Name",
-                locationDescription: "Location 1",
-                plantId: "plant1",
-                createdAt: mockCreatedAt,
-                updatedAt: mockUpdatedAt
-            };
+            const existingArea = createMockArea();
+            
             mockRepository.findOne.mockResolvedValue(existingArea);
-            mockRepository.save.mockRejectedValue(new QueryFailedError("query", undefined, new Error("error")));
+            mockRepository.save.mockRejectedValue(createQueryFailedError("error"));
 
             await expect(areaService.update(areaId, updateData))
                 .rejects
@@ -195,14 +194,8 @@ describe("AreaService", () => {
         const areaId = "1";
 
         it("should delete the area successfully", async () => {
-            const mockArea = {
-                id: areaId,
-                name: "Area to Delete",
-                locationDescription: "Location 1",
-                plantId: "plant1",
-                createdAt: new Date(),
-                updatedAt: new Date()
-            };
+            const mockArea = createMockArea({ id: areaId });
+            
             mockRepository.findOne.mockResolvedValue(mockArea);
             mockRepository.remove.mockResolvedValue(mockArea);
 
@@ -220,20 +213,14 @@ describe("AreaService", () => {
         });
 
         it("should throw DependencyExistsError when delete fails with QueryFailedError", async () => {
-            const mockArea = {
-                id: areaId,
-                name: "Area with Dependencies",
-                locationDescription: "Location 1",
-                plantId: "plant1",
-                createdAt: new Date(),
-                updatedAt: new Date()
-            };
+            const mockArea = createMockArea({ id: areaId });
+            
             mockRepository.findOne.mockResolvedValue(mockArea);
-            mockRepository.remove.mockRejectedValue(new QueryFailedError("query", undefined, new Error("error")));
+            mockRepository.remove.mockRejectedValue(createQueryFailedError("error"));
 
             await expect(areaService.delete(areaId))
                 .rejects
                 .toThrow(DependencyExistsError);
         });
     });
-}); 
+});

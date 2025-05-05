@@ -286,7 +286,7 @@ describe("EquipmentService", () => {
 
     describe("getEquipmentAreas", () => {
         const equipmentId = "1";
-        const mockAreas = [{ id: "area1", name: "Area 1" }, { id: "area2", name: "Area 2" }];
+        const mockAreas = [{ id: "area1", name: "Area 1" }, { id: "area2", name: "Area 2" } as any];
 
         it("should return areas for the equipment", async () => {
             mockEquipmentAreaService.getEquipmentAreas.mockResolvedValue(mockAreas);

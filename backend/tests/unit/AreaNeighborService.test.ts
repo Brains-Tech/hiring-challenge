@@ -36,7 +36,7 @@ describe("AreaNeighborService", () => {
         };
 
         (mockAreaNeighborRepository.manager.transaction as jest.Mock).mockImplementation(
-            async (callback) => await callback(mockTransactionManager)
+            async (callback: any) => await callback(mockTransactionManager)
         );
 
         (DatabaseContext.getInstance as jest.Mock).mockReturnValue({
