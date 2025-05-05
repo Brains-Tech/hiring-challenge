@@ -22,12 +22,10 @@ const EquipmentAreasManager: React.FC<EquipmentAreasManagerProps> = ({
   const [form] = Form.useForm();
   const queryClient = useQueryClient();
   
-  // Estados locais
   const [selectedAreas, setSelectedAreas] = useState<string[]>([]);
   const [primaryArea, setPrimaryArea] = useState<string | null>(null);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
   
-  // Buscar todas as áreas disponíveis
   const { 
     data: allAreas = [], 
     isLoading: areasLoading 
@@ -36,7 +34,6 @@ const EquipmentAreasManager: React.FC<EquipmentAreasManagerProps> = ({
     () => areaApi.getAll().then(res => res.data)
   );
   
-  // Buscar áreas atuais do equipamento
   const {
     data: currentAreas = [],
     isLoading: currentAreasLoading
@@ -46,7 +43,6 @@ const EquipmentAreasManager: React.FC<EquipmentAreasManagerProps> = ({
     { enabled: !!equipmentId }
   );
   
-  // Buscar área primária
   const {
     data: primaryAreaData,
     isLoading: primaryAreaLoading
@@ -56,7 +52,6 @@ const EquipmentAreasManager: React.FC<EquipmentAreasManagerProps> = ({
     { enabled: !!equipmentId }
   );
   
-  // Buscar grafo de vizinhança (com otimização de cache)
   const {
     data: neighborGraph = {},
     isLoading: graphLoading
@@ -65,7 +60,6 @@ const EquipmentAreasManager: React.FC<EquipmentAreasManagerProps> = ({
     async () => {
       const graph: NeighborGraph = {};
       
-      // Processamento em lotes para evitar sobrecarga de requisições
       const batchSize = 5;
       const areas = await areaApi.getAll().then(res => res.data);
       
@@ -87,8 +81,8 @@ const EquipmentAreasManager: React.FC<EquipmentAreasManagerProps> = ({
       return graph;
     },
     {
-      staleTime: 5 * 60 * 1000, // Cache por 5 minutos
-      cacheTime: 10 * 60 * 1000 // Manter no cache por 10 minutos
+      staleTime: 5 * 60 * 1000,
+      cacheTime: 10 * 60 * 1000
     }
   );
   
@@ -110,7 +104,6 @@ const EquipmentAreasManager: React.FC<EquipmentAreasManagerProps> = ({
     }
   );
   
-  // Mapeamento de IDs para nomes (para mensagens de erro mais informativas)
   const areaNames = useMemo(() => {
     const namesMap: Record<string, string> = {};
     allAreas.forEach(area => {
@@ -119,7 +112,6 @@ const EquipmentAreasManager: React.FC<EquipmentAreasManagerProps> = ({
     return namesMap;
   }, [allAreas]);
   
-  // Inicialização do formulário quando os dados estiverem disponíveis
   useEffect(() => {
     if (currentAreas.length > 0 && primaryAreaData) {
       const areaIds = currentAreas.map(area => area.id);
@@ -133,36 +125,27 @@ const EquipmentAreasManager: React.FC<EquipmentAreasManagerProps> = ({
     }
   }, [currentAreas, primaryAreaData, form]);
   
-  // Algoritmo otimizado para validar se todas as áreas formam um grupo conectado
   const validateConnectedGroup = (areaIds: string[]): ValidationResult => {
     if (areaIds.length <= 1) return { valid: true, errors: [] };
     
-    // Verificação de grafo carregado
     if (Object.keys(neighborGraph).length === 0) {
       return { valid: true, errors: [] }; 
     }
     
     const errors: string[] = [];
-    const processedPairs = new Set<string>(); // Para evitar duplicações
+    const processedPairs = new Set<string>();
     
-    // Para cada par de áreas, verificar se são vizinhas
     for (let i = 0; i < areaIds.length; i++) {
       for (let j = i + 1; j < areaIds.length; j++) {
         const area1 = areaIds[i];
         const area2 = areaIds[j];
         
-        // Criar um identificador único para o par, independente da ordem
         const pairKey = [area1, area2].sort().join('_');
-        
-        // Verificar se já processamos este par
+    
         if (processedPairs.has(pairKey)) continue;
-        
-        // Marcar como processado
         processedPairs.add(pairKey);
         
-        // Verificação O(1) usando o grafo pré-carregado
         if (!neighborGraph[area1]?.has(area2)) {
-          // Adicionar apenas uma mensagem para o par
           errors.push(`As áreas "${areaNames[area1] || area1}" e "${areaNames[area2] || area2}" não são vizinhas`);
         }
       }
@@ -174,22 +157,18 @@ const EquipmentAreasManager: React.FC<EquipmentAreasManagerProps> = ({
     };
   };
   
-  // Handler para mudança de seleção de áreas
   const handleAreaChange = (areaIds: string[]) => {
     setSelectedAreas(areaIds);
     
-    // Se a área primária foi removida, redefina-a
     if (primaryArea && !areaIds.includes(primaryArea)) {
       setPrimaryArea(areaIds.length > 0 ? areaIds[0] : null);
       form.setFieldsValue({ primaryAreaId: areaIds.length > 0 ? areaIds[0] : undefined });
     }
     
-    // Validar a seleção usando o grafo pré-carregado
     const { errors } = validateConnectedGroup(areaIds);
     setValidationErrors(errors);
   };
   
-  // Handler para submissão do formulário
   const handleSubmit = (values: { areaIds: string[]; primaryAreaId?: string }) => {
     const { valid, errors } = validateConnectedGroup(values.areaIds);
     
