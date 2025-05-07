@@ -59,6 +59,17 @@ export interface Part {
   updatedAt: string;
 }
 
+
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  password: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+
 export const plantApi = {
   getAll: () => api.get<Plant[]>('/plants'),
   getById: (id: string) => api.get<Plant>(`/plants/${id}`),
@@ -94,4 +105,11 @@ export const partApi = {
   update: (id: string, data: Partial<Omit<Part, 'id' | 'createdAt' | 'updatedAt'>>) =>
     api.put<Part>(`/parts/${id}`, data),
   delete: (id: string) => api.delete(`/parts/${id}`),
-}; 
+};
+
+export const authApi = {
+  login: (data: { email: string, password: string }) =>
+    api.post<{ user: User, token: string }>('/auth/login', { email: data.email, password: data.password }),
+  register: (data: { name: string; email: string; password: string }) =>
+    api.post<User>('/auth/register', { name: data.name, email: data.email, password: data.password }),
+}
