@@ -683,36 +683,6 @@ export function RegisterRoutes(app: Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-        const argsMaintenanceController_getParts: Record<string, TsoaRoute.ParameterSchema> = {
-        };
-        app.get('/maintenance/parts',
-            authenticateMiddleware([{"jwt":[]}]),
-            ...(fetchMiddlewares<RequestHandler>(MaintenanceController)),
-            ...(fetchMiddlewares<RequestHandler>(MaintenanceController.prototype.getParts)),
-
-            async function MaintenanceController_getParts(request: ExRequest, response: ExResponse, next: any) {
-
-            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-
-            let validatedArgs: any[] = [];
-            try {
-                validatedArgs = templateService.getValidatedArgs({ args: argsMaintenanceController_getParts, request, response });
-
-                const controller = new MaintenanceController();
-
-              await templateService.apiHandler({
-                methodName: 'getParts',
-                controller,
-                response,
-                next,
-                validatedArgs,
-                successStatus: undefined,
-              });
-            } catch (err) {
-                return next(err);
-            }
-        });
-        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         const argsEquipmentController_getEquipment: Record<string, TsoaRoute.ParameterSchema> = {
         };
         app.get('/equipment',
