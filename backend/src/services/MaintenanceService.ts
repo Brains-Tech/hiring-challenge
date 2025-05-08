@@ -153,13 +153,7 @@ export class MaintenanceService {
         }
     }
 
-    public async getAllParts(): Promise<{ id: string; name: string }[]> {
-        const parts = await this.partRepository.find({
-            relations: ["equipment"]
-        });
 
-        return this.formatPartsToMaintenance(parts);
-    }
 
 
     private calculateDueDate(
@@ -207,15 +201,6 @@ export class MaintenanceService {
             (recurrence === MaintenanceRecurrenceEnum.NONE && !scheduledDate) ||
             (recurrence !== MaintenanceRecurrenceEnum.NONE && !!scheduledDate)
         );
-    }
-
-    private formatPartsToMaintenance(parts: Part[]): { id: string; name: string }[] {
-        return parts.map((part) => {
-            return {
-                id: part.id,
-                name: part.name,
-            }
-        })
     }
 
     private formatMaintenanceData(maintenance: Maintenance): IMaintenanceFormatted {

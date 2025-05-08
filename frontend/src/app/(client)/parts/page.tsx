@@ -14,10 +14,15 @@ import {
 } from "antd";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { partApi, equipmentApi, Part, PartType } from "@/services/api";
-import { PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
+import {
+  PlusOutlined,
+  EditOutlined,
+  DeleteOutlined,
+  RightOutlined,
+} from "@ant-design/icons";
 import type { TableProps } from "antd";
 import dayjs from "dayjs";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export default function PartsPage() {
   const [form] = Form.useForm();
@@ -31,6 +36,7 @@ export default function PartsPage() {
   const queryClient = useQueryClient();
   const searchParams = useSearchParams();
   const equipmentId = searchParams.get("equipmentId");
+  const router = useRouter();
 
   const { data: parts, isLoading: partsLoading } = useQuery("parts", () =>
     partApi.getAll().then((res) => res.data)
@@ -147,6 +153,14 @@ export default function PartsPage() {
               setIsModalVisible(true);
             }}
           />
+          <Button
+            icon={<RightOutlined />}
+            onClick={() => {
+              router.push(`/maintenance?partId=${record.id}`);
+            }}
+          >
+            Maintenances
+          </Button>
           <Button
             icon={<DeleteOutlined />}
             danger

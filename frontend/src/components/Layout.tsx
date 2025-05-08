@@ -1,13 +1,17 @@
-import React from "react";
-import { Layout, Menu } from "antd";
+import React, { useEffect, useState } from "react";
+import { Avatar, Layout, Menu } from "antd";
 import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
+
 import {
   HomeOutlined,
   AppstoreOutlined,
   ToolOutlined,
   SettingOutlined,
+  LogoutOutlined,
 } from "@ant-design/icons";
+import { deleteCookie, getCookie } from "cookies-next";
+import { User } from "@/services/api";
 
 const { Header, Content, Sider } = Layout;
 
@@ -18,6 +22,7 @@ interface MainLayoutProps {
 const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const router = useRouter();
   const pathname = usePathname();
+  const [user, setUser] = useState<User>();
 
   const menuItems = [
     {
@@ -45,7 +50,29 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       icon: <SettingOutlined />,
       label: "Parts",
     },
+    {
+      key: "/maintenance",
+      icon: <ToolOutlined />,
+      label: "Maintenances",
+    },
   ];
+
+  function getFirstTwoUppercase(str: string): string {
+    return str.slice(0, 2).toUpperCase();
+  }
+
+  function logout() {
+    deleteCookie("COODEX::TOKEN");
+    deleteCookie("COODEX::USER");
+    router.push("/auth/signin");
+  }
+
+  useEffect(() => {
+    const cookie = getCookie("COODEX::USER");
+    if (typeof cookie === "string") {
+      setUser(JSON.parse(cookie));
+    }
+  }, []);
 
   return (
     <Layout style={{ minHeight: "100vh" }}>
@@ -57,16 +84,37 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
             alignItems: "center",
             gap: "12px",
             height: "100%",
+            justifyContent: "space-between",
           }}
         >
-          <img
-            src="/images/logo-opwell.png"
-            alt="Opwell Logo"
-            style={{ height: "30px", width: "auto" }}
-          />
-          <span style={{ fontSize: "20px", fontWeight: "bold" }}>
-            Asset Management
-          </span>
+          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            <img
+              src="/images/logo-opwell.png"
+              alt="Opwell Logo"
+              style={{ height: "30px", width: "auto" }}
+            />
+            <span style={{ fontSize: "20px", fontWeight: "bold" }}>
+              Asset Management
+            </span>
+          </div>
+          <div style={{ display: "flex", alignItems: "center" }}>
+            <Avatar
+              style={{ backgroundColor: "#325D82", verticalAlign: "middle" }}
+              size="large"
+            >
+              {getFirstTwoUppercase(user?.name || "")}
+            </Avatar>
+
+            <LogoutOutlined
+              style={{
+                color: "#fff",
+                fontSize: "20px",
+                marginLeft: "16px",
+                cursor: "pointer",
+              }}
+              onClick={logout}
+            />
+          </div>
         </div>
       </Header>
       <Layout>

@@ -103,19 +103,5 @@ export class MaintenanceController extends Controller {
         }
     }
 
-    @Security("jwt")
-    @Get("parts")
-    public async getParts(): Promise<{ id: string; name: string }[]> {
-        try {
-            return this.maintenanceService.getAllParts();
-        } catch (error) {
-            if (error instanceof InvalidForeignKeyError) {
-                this.setStatus(InvalidForeignKeyError.httpStatusCode);
-                throw error;
-            }
-            throw error;
-        }
-    }
-
 
 } 
