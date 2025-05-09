@@ -256,9 +256,9 @@ export default function PartsPage() {
               installationDate: values.installationDate.format("YYYY-MM-DD"),
             };
             if (editingPart) {
-              updateMutation.mutate({ id: editingPart.id, data });
+              return updateMutation.mutate({ id: editingPart.id, data });
             } else {
-              createMutation.mutate(data);
+              return createMutation.mutate(data);
             }
           }}
           layout="vertical"

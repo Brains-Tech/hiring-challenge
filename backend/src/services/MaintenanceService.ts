@@ -1,6 +1,6 @@
 import { Part } from "../models/Part";
 import { DatabaseContext } from "../config/database-context";
-import { QueryFailedError, Repository } from "typeorm";
+import { MoreThanOrEqual, QueryFailedError, Repository } from "typeorm";
 import { Maintenance, MaintenanceRecurrenceEnum } from "../models/Maintenance";
 import { PartNotFoundError } from "../errors/PartNotFoundError";
 import { InvalidForeignKeyError } from "../errors/InvalidForeignKeyError";
@@ -10,8 +10,7 @@ import { addDateInterval } from "../utils/addDateInterval";
 import { DependencyExistsError } from "../errors/DependencyExistsError";
 import { CreateUpdateMaintenanceDTO } from "../dtos/CreateUpdateMaintenance.dto";
 import { IMaintenanceFormatted } from "../interfaces/IMaintenanceFormatted";
-
-
+import dayjs from "dayjs";
 
 export class MaintenanceService {
     private partRepository: Repository<Part>;
@@ -23,7 +22,15 @@ export class MaintenanceService {
     }
 
     public async findAll(): Promise<IMaintenanceFormatted[]> {
+        const today = dayjs().startOf("day").toDate();
+
         const maintenances = await this.maintenanceRepository.find({
+            where: {
+                dueDate: MoreThanOrEqual(today),
+            },
+            order: {
+                dueDate: "ASC",
+            },
             relations: [
                 "part",
                 "part.equipment",
@@ -31,6 +38,7 @@ export class MaintenanceService {
                 "part.equipment.area.plant",
             ],
         });
+
 
         return maintenances.map((maintenance) => this.formatMaintenanceData(maintenance));
     }
@@ -114,10 +122,11 @@ export class MaintenanceService {
 
             if (!part) throw new PartNotFoundError();
 
-            const dueDate = this.calculateDueDate(data?.recurrence, data.scheduledDate, part);
+            const dueDate = this.calculateDueDate(data.recurrence, data.scheduledDate, part);
 
             const updatedMaintenance = this.maintenanceRepository.merge(maintenance, {
                 ...data,
+                scheduledDate: data.scheduledDate ?? '',
                 dueDate,
             });
 
@@ -128,6 +137,7 @@ export class MaintenanceService {
             if (error instanceof QueryFailedError && error.message.includes("FOREIGN KEY")) {
                 throw new InvalidForeignKeyError("Invalid part ID");
             }
+
             throw new InvalidDataError("Invalid maintenance data");
         }
     }
@@ -152,8 +162,6 @@ export class MaintenanceService {
             throw error;
         }
     }
-
-
 
 
     private calculateDueDate(
