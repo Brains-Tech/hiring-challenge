@@ -1,11 +1,9 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany } from "typeorm";
+import { Entity, Column, OneToMany } from "typeorm";
 import { Area } from "./Area";
+import { ModelBase } from "./ModelBase";
 
 @Entity()
-export class Plant {
-    @PrimaryGeneratedColumn("uuid")
-    id!: string;
-
+export class Plant extends ModelBase {
     @Column()
     name!: string;
 
@@ -14,10 +12,4 @@ export class Plant {
 
     @OneToMany(() => Area, area => area.plant)
     areas?: Area[];
-
-    @CreateDateColumn()
-    createdAt!: Date;
-
-    @UpdateDateColumn()
-    updatedAt!: Date;
 } 

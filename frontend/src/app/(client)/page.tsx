@@ -3,7 +3,13 @@
 import React from "react";
 import { Card, Row, Col, Statistic } from "antd";
 import { useQuery } from "react-query";
-import { plantApi, areaApi, equipmentApi, partApi } from "@/services/api";
+import {
+  plantApi,
+  areaApi,
+  equipmentApi,
+  partApi,
+  maintenanceApi,
+} from "@/services/api";
 import {
   AppstoreOutlined,
   ToolOutlined,
@@ -23,6 +29,9 @@ export default function DashboardPage() {
   );
   const { data: parts } = useQuery("parts", () =>
     partApi.getAll().then((res) => res.data)
+  );
+  const { data: maintenances } = useQuery("maintenances", () =>
+    maintenanceApi.getAll().then((res) => res.data)
   );
 
   return (
@@ -69,6 +78,17 @@ export default function DashboardPage() {
                 title="Parts"
                 value={parts?.length || 0}
                 prefix={<SettingOutlined />}
+              />
+            </Card>
+          </Link>
+        </Col>
+        <Col xs={24} sm={12} lg={6}>
+          <Link href="/maintenances">
+            <Card hoverable>
+              <Statistic
+                title="Maintenances"
+                value={maintenances?.length || 0}
+                prefix={<ToolOutlined />}
               />
             </Card>
           </Link>

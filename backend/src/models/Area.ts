@@ -1,12 +1,11 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany } from "typeorm";
+import { Entity, Column, ManyToOne, OneToMany } from "typeorm";
 import { Plant } from "./Plant";
 import { Equipment } from "./Equipment";
+import { ModelBase } from "./ModelBase";
+
 
 @Entity()
-export class Area {
-    @PrimaryGeneratedColumn("uuid")
-    id!: string;
-
+export class Area extends ModelBase {
     @Column()
     name!: string;
 
@@ -22,9 +21,4 @@ export class Area {
     @OneToMany(() => Equipment, equipment => equipment.area)
     equipment?: Equipment[];
 
-    @Column({ type: "datetime", default: () => "CURRENT_TIMESTAMP" })
-    createdAt!: Date;
-
-    @Column({ type: "datetime", default: () => "CURRENT_TIMESTAMP" })
-    updatedAt!: Date;
 } 

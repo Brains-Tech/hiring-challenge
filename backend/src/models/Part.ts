@@ -1,5 +1,7 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from "typeorm";
+import { Entity, Column, ManyToOne } from "typeorm";
 import { Equipment } from "./Equipment";
+
+import { ModelBase } from "./ModelBase";
 
 export enum PartType {
     ELECTRIC = "electric",
@@ -9,10 +11,7 @@ export enum PartType {
 }
 
 @Entity()
-export class Part {
-    @PrimaryGeneratedColumn("uuid")
-    id!: string;
-
+export class Part extends ModelBase {
     @Column()
     name!: string;
 
@@ -36,10 +35,5 @@ export class Part {
 
     @Column()
     equipmentId!: string;
-
-    @Column({ type: "datetime", default: () => "CURRENT_TIMESTAMP" })
-    createdAt!: Date;
-
-    @Column({ type: "datetime", default: () => "CURRENT_TIMESTAMP" })
-    updatedAt!: Date;
+    
 } 

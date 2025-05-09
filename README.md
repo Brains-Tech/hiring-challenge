@@ -6,7 +6,7 @@ A full-stack application for managing industrial assets, built with Node.js, Exp
 
 # Introduction
 
-Opwell is a company focused on empowering the industrial sector through advanced technology and AI-driven solutions. One of its core services is asset management, which involves maintaining an accurate and structured inventory of industrial facilities, equipment, and parts, along with the necessary documentation for effective maintenance and operation.
+Opwell is a company focused on empowering the industrial sector through advanced technology and AI-driven solutions. One of its core services is asset management, which involves maintaining an accurate and structured inventory of industrial facilities, equipment, parts, and maintenances along with the necessary documentation for effective maintenance and operation.
 
 This repository contains a sample application designed to simulate that functionality. It allows users to manage an inventory of:
 
@@ -14,6 +14,7 @@ This repository contains a sample application designed to simulate that function
 - Areas – subdivisions within plants
 - Equipment – machines or devices located in areas
 - Parts – electrical, electronic, mechanical, or hydraulic components installed in equipment
+- Maintenances - management of maintenance activities performed on parts
 
 Each of these entities is fully manageable through CRUD operations, and the application provides intuitive filtering and navigation between them. The frontend is built with Next.js and styled using Ant Design, while the backend uses Node.js, Express, and TSOA to expose a typed REST API.
 
@@ -64,6 +65,13 @@ backend/
 │   ├── controllers/    # API controllers
 │   ├── models/         # Database models
 │   ├── routes/         # Auto-generated routes
+│   ├── dtos/           # Data Transfer Objects (e.g., validation schemas)
+│   ├── interfaces/     # TypeScript interfaces used across the app
+│   ├── errors/         # Generic and Specific Errors
+│   ├── middleware/     # Custom Express middleware (e.g., auth, logging)
+│   ├── migrations/     # TypeORM migration files for schema changes
+│   ├── services/       # Business logic and reusable service classes
+│   ├── utils/          # Utility functions and shared helpers
 │   └── index.ts        # Application entry point
 ├── tests/              # Test files
 ├── package.json        # Dependencies and scripts
@@ -119,12 +127,16 @@ frontend/
 ├── src/
 │   ├── app/            # Next.js app router pages
 │   ├── components/     # Reusable React components
-│   ├── lib/            # Utility functions and libraries
-│   ├── services/       # API service functions
-│   └── globals.css     # Global styles
-├── public/             # Static assets
-├── package.json        # Dependencies and scripts
-└── tsconfig.json       # TypeScript configuration
+│   ├── lib/            # Utility functions and third-party libraries
+│   ├── services/       # API service functions (e.g., fetch calls)
+│   ├── styles/         # Global styles and theme configuration
+│   ├── hooks/          # Custom React hooks to encapsulate shared logic
+│   ├── utils/          # General-purpose helper functions
+│   ├── middleware.ts   # Middleware logic executed before route handling (Next.js)
+├── public/             # Static assets like images and icons
+├── .env.sample         # Example environment variable definitions
+├── package.json        # Project dependencies and npm/yarn scripts
+└── tsconfig.json       # TypeScript configuration file
 ```
 
 ### Pages
@@ -134,6 +146,7 @@ frontend/
 - **Areas**: Manage areas within plants
 - **Equipment**: Manage equipment within areas
 - **Parts**: Manage parts within equipment
+- **Maintenance**: Control and schedule maintenance for parts
 
 ### Setup and Running
 
@@ -217,6 +230,21 @@ frontend/
 | createdAt        | DateTime | Creation timestamp                     |
 | updatedAt        | DateTime | Last update timestamp                  |
 
+### Maintenance
+
+| Field         | Type                   | Description                                 |
+| ------------- | ---------------------- | ------------------------------------------- |
+| id            | UUID                   | Primary key                                 |
+| title         | String                 | Name of the maintenance                     |
+| scheduledDate | Date                   | Specific scheduled date for the maintenance |
+| recurrence    | Enum                   | Recurrence pattern (none, monthly, etc.)    |
+| dueDate       | Date                   | Automatically calculated due date           |
+| description   | Text (optional)        | Additional details about the maintenance    |
+| part          | Relation (Many-to-One) | Associated part                             |
+| partId        | UUID                   | Foreign key referencing the related part    |
+| createdAt     | DateTime               | Creation timestamp                          |
+| updatedAt     | DateTime               | Last update timestamp                       |
+
 ## Database Schema
 
 ```mermaid
@@ -224,6 +252,7 @@ erDiagram
     Plant ||--o{ Area : "has many"
     Area ||--o{ Equipment : "has many"
     Equipment ||--o{ Part : "has many"
+    Part ||--o{ Maintenance : "has many"
 
     Plant {
         string id PK "uuid"
@@ -264,6 +293,18 @@ erDiagram
         datetime createdAt
         datetime updatedAt
     }
+
+    Maintenance {
+        string id PK "uuid"
+        string title
+        date scheduledDate
+        enum recurrence "NONE|MONTHLY|QUARTERLY|SEMIANNUAL|ANNUAL"
+        date dueDate
+        text description
+        string partId FK
+        datetime createdAt
+        datetime updatedAt
+    }
 ```
 
 The diagram shows the relationships between the main entities in the system:
@@ -271,6 +312,7 @@ The diagram shows the relationships between the main entities in the system:
 - A **Plant** can have multiple **Areas**
 - An **Area** can have multiple pieces of **Equipment**
 - A piece of **Equipment** can have multiple **Parts**
+- A **Maintenance** belongs to one Part
 
 Each entity has timestamps (`createdAt` and `updatedAt`) for auditing purposes. The relationships are enforced through foreign keys, ensuring data integrity across the system.
 
@@ -313,6 +355,22 @@ Each entity has timestamps (`createdAt` and `updatedAt`) for auditing purposes. 
 - `IT` - Information Technology components
 - `OIL_AND_GAS` - Oil and Gas industry components
 - `AGRICULTURE` - Agricultural industry components
+
+## Maintenance
+
+- `GET /api/maintenance` - Get all maintenances
+- `GET /api/maintenance/:id` - Get a specific maintenance
+- `POST /api/maintenance` - Create a new maintenance
+- `PUT /api/maintenance/:id` - Update a maintenance
+- `DELETE /api/maintenance/:id` - Delete a maintenance
+
+# Maintenance Recurrence
+
+- NONE = No recurrence,
+- MONTHLY = Once a month,
+- QUARTERLY = Once every 3 months,
+- SEMIANNUAL = Twice a year (every 6 months),
+- ANNUAL - Once a year
 
 ## Getting Started
 

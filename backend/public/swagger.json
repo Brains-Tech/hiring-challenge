@@ -1,0 +1,1511 @@
+{
+	"openapi": "3.0.0",
+	"components": {
+		"examples": {},
+		"headers": {},
+		"parameters": {},
+		"requestBodies": {},
+		"responses": {},
+		"schemas": {
+			"Plant": {
+				"properties": {
+					"id": {
+						"type": "string"
+					},
+					"createdAt": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"updatedAt": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"name": {
+						"type": "string"
+					},
+					"address": {
+						"type": "string"
+					},
+					"areas": {
+						"items": {
+							"$ref": "#/components/schemas/Area"
+						},
+						"type": "array"
+					}
+				},
+				"required": [
+					"id",
+					"createdAt",
+					"updatedAt",
+					"name",
+					"address"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"Area": {
+				"properties": {
+					"id": {
+						"type": "string"
+					},
+					"createdAt": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"updatedAt": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"name": {
+						"type": "string"
+					},
+					"locationDescription": {
+						"type": "string"
+					},
+					"plant": {
+						"$ref": "#/components/schemas/Plant"
+					},
+					"plantId": {
+						"type": "string"
+					},
+					"equipment": {
+						"items": {
+							"$ref": "#/components/schemas/Equipment"
+						},
+						"type": "array"
+					}
+				},
+				"required": [
+					"id",
+					"createdAt",
+					"updatedAt",
+					"name",
+					"locationDescription",
+					"plantId"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"PartType": {
+				"enum": [
+					"electric",
+					"electronic",
+					"mechanical",
+					"hydraulical"
+				],
+				"type": "string"
+			},
+			"Equipment": {
+				"properties": {
+					"id": {
+						"type": "string"
+					},
+					"createdAt": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"updatedAt": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"name": {
+						"type": "string"
+					},
+					"manufacturer": {
+						"type": "string"
+					},
+					"serialNumber": {
+						"type": "string"
+					},
+					"initialOperationsDate": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"area": {
+						"$ref": "#/components/schemas/Area"
+					},
+					"areaId": {
+						"type": "string"
+					},
+					"parts": {
+						"items": {
+							"$ref": "#/components/schemas/Part"
+						},
+						"type": "array"
+					}
+				},
+				"required": [
+					"id",
+					"createdAt",
+					"updatedAt",
+					"name",
+					"manufacturer",
+					"serialNumber",
+					"initialOperationsDate",
+					"areaId"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"Part": {
+				"properties": {
+					"id": {
+						"type": "string"
+					},
+					"createdAt": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"updatedAt": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"name": {
+						"type": "string"
+					},
+					"type": {
+						"$ref": "#/components/schemas/PartType"
+					},
+					"manufacturer": {
+						"type": "string"
+					},
+					"serialNumber": {
+						"type": "string"
+					},
+					"installationDate": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"equipment": {
+						"$ref": "#/components/schemas/Equipment"
+					},
+					"equipmentId": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"id",
+					"createdAt",
+					"updatedAt",
+					"name",
+					"type",
+					"manufacturer",
+					"serialNumber",
+					"installationDate",
+					"equipmentId"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"Pick_Plant.name-or-address_": {
+				"properties": {
+					"name": {
+						"type": "string"
+					},
+					"address": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"name",
+					"address"
+				],
+				"type": "object",
+				"description": "From T, pick a set of properties whose keys are in the union K"
+			},
+			"Partial_Pick_Plant.name-or-address__": {
+				"properties": {
+					"name": {
+						"type": "string"
+					},
+					"address": {
+						"type": "string"
+					}
+				},
+				"type": "object",
+				"description": "Make all properties in T optional"
+			},
+			"Pick_Part.Exclude_keyofPart.id-or-createdAt-or-updatedAt__": {
+				"properties": {
+					"name": {
+						"type": "string"
+					},
+					"type": {
+						"$ref": "#/components/schemas/PartType"
+					},
+					"manufacturer": {
+						"type": "string"
+					},
+					"serialNumber": {
+						"type": "string"
+					},
+					"installationDate": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"equipment": {
+						"$ref": "#/components/schemas/Equipment"
+					},
+					"equipmentId": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"name",
+					"type",
+					"manufacturer",
+					"serialNumber",
+					"installationDate",
+					"equipmentId"
+				],
+				"type": "object",
+				"description": "From T, pick a set of properties whose keys are in the union K"
+			},
+			"Omit_Part.id-or-createdAt-or-updatedAt_": {
+				"$ref": "#/components/schemas/Pick_Part.Exclude_keyofPart.id-or-createdAt-or-updatedAt__",
+				"description": "Construct a type with the properties of T except for those in type K."
+			},
+			"Partial_Omit_Part.id-or-createdAt-or-updatedAt__": {
+				"properties": {
+					"name": {
+						"type": "string"
+					},
+					"type": {
+						"$ref": "#/components/schemas/PartType"
+					},
+					"manufacturer": {
+						"type": "string"
+					},
+					"serialNumber": {
+						"type": "string"
+					},
+					"installationDate": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"equipment": {
+						"$ref": "#/components/schemas/Equipment"
+					},
+					"equipmentId": {
+						"type": "string"
+					}
+				},
+				"type": "object",
+				"description": "Make all properties in T optional"
+			},
+			"MaintenanceRecurrenceEnum": {
+				"enum": [
+					"none",
+					"monthly",
+					"quarterly",
+					"semiannual",
+					"annual"
+				],
+				"type": "string"
+			},
+			"IMaintenanceFormatted": {
+				"properties": {
+					"id": {
+						"type": "string"
+					},
+					"createdAt": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"updatedAt": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"title": {
+						"type": "string"
+					},
+					"scheduledDate": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"recurrence": {
+						"$ref": "#/components/schemas/MaintenanceRecurrenceEnum"
+					},
+					"dueDate": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"description": {
+						"type": "string"
+					},
+					"part": {
+						"properties": {
+							"installationDate": {
+								"type": "string",
+								"format": "date-time"
+							},
+							"name": {
+								"type": "string"
+							},
+							"id": {
+								"type": "string"
+							}
+						},
+						"required": [
+							"name",
+							"id"
+						],
+						"type": "object"
+					},
+					"equipment": {
+						"properties": {
+							"initialOperationsDate": {
+								"type": "string",
+								"format": "date-time"
+							},
+							"name": {
+								"type": "string"
+							},
+							"id": {
+								"type": "string"
+							}
+						},
+						"required": [
+							"name",
+							"id"
+						],
+						"type": "object"
+					},
+					"area": {
+						"properties": {
+							"name": {
+								"type": "string"
+							},
+							"id": {
+								"type": "string"
+							}
+						},
+						"required": [
+							"name",
+							"id"
+						],
+						"type": "object"
+					},
+					"plant": {
+						"properties": {
+							"name": {
+								"type": "string"
+							},
+							"id": {
+								"type": "string"
+							}
+						},
+						"required": [
+							"name",
+							"id"
+						],
+						"type": "object"
+					}
+				},
+				"required": [
+					"id",
+					"createdAt",
+					"updatedAt",
+					"title",
+					"recurrence",
+					"dueDate",
+					"part",
+					"equipment",
+					"area",
+					"plant"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"CreateUpdateMaintenanceDTO": {
+				"properties": {
+					"title": {
+						"type": "string"
+					},
+					"recurrence": {
+						"$ref": "#/components/schemas/MaintenanceRecurrenceEnum"
+					},
+					"scheduledDate": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"description": {
+						"type": "string"
+					},
+					"partId": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"title",
+					"recurrence",
+					"partId"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"Pick_Equipment.Exclude_keyofEquipment.id-or-createdAt-or-updatedAt__": {
+				"properties": {
+					"name": {
+						"type": "string"
+					},
+					"manufacturer": {
+						"type": "string"
+					},
+					"serialNumber": {
+						"type": "string"
+					},
+					"initialOperationsDate": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"area": {
+						"$ref": "#/components/schemas/Area"
+					},
+					"areaId": {
+						"type": "string"
+					},
+					"parts": {
+						"items": {
+							"$ref": "#/components/schemas/Part"
+						},
+						"type": "array"
+					}
+				},
+				"required": [
+					"name",
+					"manufacturer",
+					"serialNumber",
+					"initialOperationsDate",
+					"areaId"
+				],
+				"type": "object",
+				"description": "From T, pick a set of properties whose keys are in the union K"
+			},
+			"Omit_Equipment.id-or-createdAt-or-updatedAt_": {
+				"$ref": "#/components/schemas/Pick_Equipment.Exclude_keyofEquipment.id-or-createdAt-or-updatedAt__",
+				"description": "Construct a type with the properties of T except for those in type K."
+			},
+			"Partial_Omit_Equipment.id-or-createdAt-or-updatedAt__": {
+				"properties": {
+					"name": {
+						"type": "string"
+					},
+					"manufacturer": {
+						"type": "string"
+					},
+					"serialNumber": {
+						"type": "string"
+					},
+					"initialOperationsDate": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"area": {
+						"$ref": "#/components/schemas/Area"
+					},
+					"areaId": {
+						"type": "string"
+					},
+					"parts": {
+						"items": {
+							"$ref": "#/components/schemas/Part"
+						},
+						"type": "array"
+					}
+				},
+				"type": "object",
+				"description": "Make all properties in T optional"
+			},
+			"User": {
+				"properties": {
+					"id": {
+						"type": "string"
+					},
+					"createdAt": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"updatedAt": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"name": {
+						"type": "string"
+					},
+					"email": {
+						"type": "string"
+					},
+					"password": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"id",
+					"createdAt",
+					"updatedAt",
+					"name",
+					"email",
+					"password"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"Pick_User.Exclude_keyofUser.id-or-createdAt-or-updatedAt__": {
+				"properties": {
+					"name": {
+						"type": "string"
+					},
+					"email": {
+						"type": "string"
+					},
+					"password": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"name",
+					"email",
+					"password"
+				],
+				"type": "object",
+				"description": "From T, pick a set of properties whose keys are in the union K"
+			},
+			"Omit_User.id-or-createdAt-or-updatedAt_": {
+				"$ref": "#/components/schemas/Pick_User.Exclude_keyofUser.id-or-createdAt-or-updatedAt__",
+				"description": "Construct a type with the properties of T except for those in type K."
+			},
+			"Pick_User.Exclude_keyofUser.id-or-createdAt-or-updatedAt-or-name__": {
+				"properties": {
+					"email": {
+						"type": "string"
+					},
+					"password": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"email",
+					"password"
+				],
+				"type": "object",
+				"description": "From T, pick a set of properties whose keys are in the union K"
+			},
+			"Omit_User.id-or-createdAt-or-updatedAt-or-name_": {
+				"$ref": "#/components/schemas/Pick_User.Exclude_keyofUser.id-or-createdAt-or-updatedAt-or-name__",
+				"description": "Construct a type with the properties of T except for those in type K."
+			},
+			"Pick_Area.name-or-locationDescription-or-plantId_": {
+				"properties": {
+					"name": {
+						"type": "string"
+					},
+					"locationDescription": {
+						"type": "string"
+					},
+					"plantId": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"name",
+					"locationDescription",
+					"plantId"
+				],
+				"type": "object",
+				"description": "From T, pick a set of properties whose keys are in the union K"
+			},
+			"Partial_Pick_Area.name-or-locationDescription__": {
+				"properties": {
+					"name": {
+						"type": "string"
+					},
+					"locationDescription": {
+						"type": "string"
+					}
+				},
+				"type": "object",
+				"description": "Make all properties in T optional"
+			}
+		},
+		"securitySchemes": {
+			"jwt": {
+				"type": "http",
+				"scheme": "bearer",
+				"bearerFormat": "JWT"
+			}
+		}
+	},
+	"info": {
+		"title": "backend",
+		"version": "1.0.0",
+		"license": {
+			"name": "ISC"
+		},
+		"contact": {}
+	},
+	"paths": {
+		"/plants": {
+			"get": {
+				"operationId": "GetPlants",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/Plant"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"Plant"
+				],
+				"security": [],
+				"parameters": []
+			},
+			"post": {
+				"operationId": "CreatePlant",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Plant"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"Plant"
+				],
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/Pick_Plant.name-or-address_"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/plants/{plantId}": {
+			"get": {
+				"operationId": "GetPlant",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Plant"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"Plant"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "plantId",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			},
+			"put": {
+				"operationId": "UpdatePlant",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Plant"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"Plant"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "plantId",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/Partial_Pick_Plant.name-or-address__"
+							}
+						}
+					}
+				}
+			},
+			"delete": {
+				"operationId": "DeletePlant",
+				"responses": {
+					"204": {
+						"description": "No content"
+					}
+				},
+				"tags": [
+					"Plant"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "plantId",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/parts": {
+			"get": {
+				"operationId": "GetParts",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/Part"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"Parts"
+				],
+				"security": [],
+				"parameters": []
+			},
+			"post": {
+				"operationId": "CreatePart",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Part"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"Parts"
+				],
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/Omit_Part.id-or-createdAt-or-updatedAt_"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/parts/{partId}": {
+			"get": {
+				"operationId": "GetPartById",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Part"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"Parts"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "partId",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			},
+			"put": {
+				"operationId": "UpdatePart",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Part"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"Parts"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "partId",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/Partial_Omit_Part.id-or-createdAt-or-updatedAt__"
+							}
+						}
+					}
+				}
+			},
+			"delete": {
+				"operationId": "DeletePart",
+				"responses": {
+					"204": {
+						"description": "No content"
+					}
+				},
+				"tags": [
+					"Parts"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "partId",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/maintenance": {
+			"get": {
+				"operationId": "GetMaintenances",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/IMaintenanceFormatted"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"Maintenance"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": []
+			},
+			"post": {
+				"operationId": "CreateMaintenance",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/IMaintenanceFormatted"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"Maintenance"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/CreateUpdateMaintenanceDTO"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/maintenance/{maintenanceId}": {
+			"get": {
+				"operationId": "GetMaintenanceById",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/IMaintenanceFormatted"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"Maintenance"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "maintenanceId",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			},
+			"put": {
+				"operationId": "UpdateMaintenance",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/IMaintenanceFormatted"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"Maintenance"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "maintenanceId",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/CreateUpdateMaintenanceDTO"
+							}
+						}
+					}
+				}
+			},
+			"delete": {
+				"operationId": "DeleteMaintenance",
+				"responses": {
+					"204": {
+						"description": "No content"
+					}
+				},
+				"tags": [
+					"Maintenance"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "maintenanceId",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/equipment": {
+			"get": {
+				"operationId": "GetEquipment",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/Equipment"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"Equipment"
+				],
+				"security": [],
+				"parameters": []
+			},
+			"post": {
+				"operationId": "CreateEquipment",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Equipment"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"Equipment"
+				],
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/Omit_Equipment.id-or-createdAt-or-updatedAt_"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/equipment/{equipmentId}": {
+			"get": {
+				"operationId": "GetEquipmentById",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Equipment"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"Equipment"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "equipmentId",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			},
+			"put": {
+				"operationId": "UpdateEquipment",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Equipment"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"Equipment"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "equipmentId",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/Partial_Omit_Equipment.id-or-createdAt-or-updatedAt__"
+							}
+						}
+					}
+				}
+			},
+			"delete": {
+				"operationId": "DeleteEquipment",
+				"responses": {
+					"204": {
+						"description": "No content"
+					}
+				},
+				"tags": [
+					"Equipment"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "equipmentId",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/auth/token-validate": {
+			"get": {
+				"operationId": "ValidateToken",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "boolean"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"Auth"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": []
+			}
+		},
+		"/auth/register": {
+			"post": {
+				"operationId": "Register",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/User"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"Auth"
+				],
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/Omit_User.id-or-createdAt-or-updatedAt_"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/auth/login": {
+			"post": {
+				"operationId": "Login",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"properties": {
+										"user": {
+											"$ref": "#/components/schemas/User"
+										},
+										"token": {
+											"type": "string"
+										}
+									},
+									"required": [
+										"user",
+										"token"
+									],
+									"type": "object"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"Auth"
+				],
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/Omit_User.id-or-createdAt-or-updatedAt-or-name_"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/areas": {
+			"get": {
+				"operationId": "GetAreas",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/Area"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"Area"
+				],
+				"security": [],
+				"parameters": []
+			},
+			"post": {
+				"operationId": "CreateArea",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Area"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"Area"
+				],
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/Pick_Area.name-or-locationDescription-or-plantId_"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/areas/{areaId}": {
+			"get": {
+				"operationId": "GetArea",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Area"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"Area"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "areaId",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			},
+			"put": {
+				"operationId": "UpdateArea",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Area"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"Area"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "areaId",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/Partial_Pick_Area.name-or-locationDescription__"
+							}
+						}
+					}
+				}
+			},
+			"delete": {
+				"operationId": "DeleteArea",
+				"responses": {
+					"204": {
+						"description": "No content"
+					}
+				},
+				"tags": [
+					"Area"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "areaId",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		}
+	},
+	"servers": [
+		{
+			"url": "/"
+		}
+	]
+}

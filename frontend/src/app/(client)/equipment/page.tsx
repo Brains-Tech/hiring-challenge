@@ -159,6 +159,14 @@ export default function EquipmentPage() {
             Parts
           </Button>
           <Button
+            icon={<RightOutlined />}
+            onClick={() => {
+              router.push(`/maintenance?equipmentId=${record.id}`);
+            }}
+          >
+            Maintenances
+          </Button>
+          <Button
             icon={<DeleteOutlined />}
             danger
             onClick={() => {
