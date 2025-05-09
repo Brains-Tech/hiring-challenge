@@ -3,6 +3,7 @@ import { Plant } from "../models/Plant";
 import { Area } from "../models/Area";
 import { Equipment } from "../models/Equipment";
 import { Part, PartType } from "../models/Part";
+import { Maintenance, MaintenanceRecurrenceEnum } from "../models/Maintenance";
 
 export async function seedDatabase(dataSource: DataSource) {
     // Check if database is empty
@@ -41,7 +42,7 @@ export async function seedDatabase(dataSource: DataSource) {
     // Create Areas for each plant
     const areaRepository = dataSource.getRepository(Area);
     const areas: Area[] = [];
-    
+
     // Data Center São Paulo Areas
     areas.push(
         ...([
@@ -230,7 +231,7 @@ export async function seedDatabase(dataSource: DataSource) {
 
     for (const area of savedAreas) {
         let equipmentList = [];
-        
+
         // Data Center Equipment
         if (area.plant?.name?.includes("Data Center")) {
             equipmentList = [
@@ -324,7 +325,7 @@ export async function seedDatabase(dataSource: DataSource) {
         // Create Parts for each equipment
         for (const equipment of savedEquipment) {
             const partsList = [];
-            
+
             // Data Center Parts
             if (equipment.name.includes("Rack") || equipment.name.includes("Switch") || equipment.name.includes("UPS")) {
                 partsList.push(
@@ -458,6 +459,40 @@ export async function seedDatabase(dataSource: DataSource) {
             await partRepository.save(partsList);
         }
     }
+
+    const maintenanceRepository = dataSource.getRepository(Maintenance);
+    const allParts = await partRepository.find();
+
+    const today = new Date();
+
+    const sampleMaintenances = allParts.slice(0, 10).flatMap((part, index) => {
+        const dueDate = new Date(today);
+        dueDate.setDate(today.getDate() + (index + 1) * 7);
+
+        return [
+            maintenanceRepository.create({
+                title: `Initial Inspection for ${part.name}`,
+                description: "Routine startup inspection",
+                recurrence: MaintenanceRecurrenceEnum.NONE,
+                scheduledDate: today,
+                dueDate,
+                part,
+                partId: part.id,
+            }),
+            maintenanceRepository.create({
+                title: `Monthly Check on ${part.name}`,
+                description: "Monthly performance verification",
+                recurrence: MaintenanceRecurrenceEnum.MONTHLY,
+                dueDate: new Date(today.getFullYear(), today.getMonth() + 1, today.getDate()),
+                part,
+                partId: part.id,
+            }),
+        ];
+    });
+
+    await maintenanceRepository.save(sampleMaintenances);
+
+
 
     console.log("Database seeded successfully!");
 } 
