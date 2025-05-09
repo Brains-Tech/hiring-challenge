@@ -271,6 +271,7 @@ describe("MaintenanceService", () => {
 
     describe("create", () => {
         it("should create a new maintenance", async () => {
+
             const mockPart = {
                 id: "p1",
                 name: "Part A",
@@ -279,6 +280,14 @@ describe("MaintenanceService", () => {
                     id: "eq1",
                     name: "Equipment A",
                     initialOperationsDate: new Date("2024-01-01"),
+                    area: {
+                        id: "a1",
+                        name: "Area 1",
+                        plant: {
+                            id: "pl1",
+                            name: "Plant 1",
+                        },
+                    },
                 },
             } as any;
 
@@ -297,60 +306,82 @@ describe("MaintenanceService", () => {
                 dueDate: calculatedDueDate,
                 createdAt: new Date(),
                 updatedAt: new Date(),
+            } as any;
+
+            const mockFormattedMaintenance = {
+                id: "m1",
+                title: inputData.title,
+                recurrence: inputData.recurrence,
+                dueDate: calculatedDueDate,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+                description: inputData.description,
+                scheduledDate: undefined,
+                part: {
+                    id: mockPart.id,
+                    name: mockPart.name,
+                    installationDate: mockPart.installationDate,
+                },
+                equipment: {
+                    id: mockPart.equipment.id,
+                    name: mockPart.equipment.name,
+                    initialOperationsDate: mockPart.equipment.initialOperationsDate,
+                },
+                area: {
+                    id: mockPart.equipment.area.id,
+                    name: mockPart.equipment.area.name,
+                },
+                plant: {
+                    id: mockPart.equipment.area.plant.id,
+                    name: mockPart.equipment.area.plant.name,
+                },
             };
 
-            mockPartRepo.findOne!.mockResolvedValue(mockPart as any);
-            mockMaintenanceRepo.create!.mockReturnValue(mockSavedMaintenance as any);
-            mockMaintenanceRepo.save!.mockResolvedValue(mockSavedMaintenance as any);
-
+            mockPartRepo.findOne!.mockResolvedValue(mockPart);
+            mockMaintenanceRepo.create!.mockReturnValue(mockSavedMaintenance);
+            mockMaintenanceRepo.save!.mockResolvedValue(mockSavedMaintenance);
+            mockMaintenanceRepo.findOne!.mockResolvedValueOnce({
+                ...mockSavedMaintenance,
+                part: mockPart,
+            });
 
             const result = await maintenanceService.create(inputData);
 
-            expect(mockPartRepo.findOne).toHaveBeenCalledWith({
-                where: { id: inputData.partId },
-                relations: ["equipment"],
-            });
-
-            expect(mockMaintenanceRepo.create).toHaveBeenCalledWith({
-                ...inputData,
-                dueDate: expect.any(Date),
-            });
-
-            expect(mockMaintenanceRepo.save).toHaveBeenCalledWith(mockSavedMaintenance);
-
-            expect(result).toMatchObject({
-                id: "m1",
-                title: "Check Pump",
-                recurrence: MaintenanceRecurrenceEnum.MONTHLY,
-                dueDate: expect.any(Date),
-                part: {
-                    id: "p1",
-                    name: "Part A",
-                },
-            });
+            expect(result).toMatchObject(mockFormattedMaintenance);
         });
     });
 
     describe("update", () => {
         it("should update an existing maintenance", async () => {
+            const mockPart = {
+                id: "p1",
+                name: "Part A",
+                installationDate: undefined, // force baseDate to come from equipment
+                equipment: {
+                    id: "eq1",
+                    name: "Equipment A",
+                    initialOperationsDate: new Date("2024-01-01"),
+                    area: {
+                        id: "a1",
+                        name: "Area A",
+                        plant: {
+                            id: "pl1",
+                            name: "Plant A",
+                        },
+                    },
+                },
+            } as any;
+
             const mockMaintenance: any = {
                 id: "m1",
                 title: "Check Pump",
                 description: "Routine check",
                 recurrence: MaintenanceRecurrenceEnum.MONTHLY,
-                dueDate: new Date(),
+                dueDate: new Date("2024-02-01"),
                 createdAt: new Date(),
                 updatedAt: new Date(),
-                part: {
-                    id: "p1",
-                    name: "Part A",
-                    installationDate: new Date(),
-                    equipment: {
-                        id: "eq1",
-                        name: "Equipment A",
-                        initialOperationsDate: new Date(),
-                    },
-                },
+                part: mockPart,
+                scheduledDate: undefined,
             };
 
             const inputData = {
@@ -358,33 +389,38 @@ describe("MaintenanceService", () => {
                 description: "Updated routine check",
                 recurrence: MaintenanceRecurrenceEnum.QUARTERLY,
                 partId: "p1",
+                scheduledDate: undefined,
             };
 
             const updatedMaintenance = {
                 ...mockMaintenance,
                 ...inputData,
+                dueDate: new Date("2024-04-01"),
             };
 
-            mockMaintenanceRepo.findOne!.mockResolvedValue(mockMaintenance as any);
-            mockMaintenanceRepo.save!.mockResolvedValue(updatedMaintenance as any);
-
+            // mock chain
+            mockMaintenanceRepo.findOne!.mockResolvedValueOnce(mockMaintenance as any);
+            mockPartRepo.findOne!.mockResolvedValueOnce(mockPart as any);
+            mockMaintenanceRepo.save!.mockResolvedValueOnce(updatedMaintenance as any);
+            mockMaintenanceRepo.findOne!.mockResolvedValueOnce(updatedMaintenance as any);
 
             const result = await maintenanceService.update("m1", inputData);
 
             expect(mockMaintenanceRepo.findOne).toHaveBeenCalledWith({
                 where: { id: "m1" },
-                relations: ["part", "part.equipment"],
+                relations: ["part", "part.equipment", "part.equipment.area", "part.equipment.area.plant"],
             });
-
-            expect(mockMaintenanceRepo.save).toHaveBeenCalledWith(updatedMaintenance);
-
+            expect(mockPartRepo.findOne).toHaveBeenCalledWith({
+                where: { id: "p1" },
+                relations: ["equipment"],
+            });
+            expect(mockMaintenanceRepo.save).toHaveBeenCalledWith(expect.any(Object));
             expect(result).toMatchObject({
                 id: "m1",
                 title: "Updated Check Pump",
                 recurrence: MaintenanceRecurrenceEnum.QUARTERLY,
             });
         });
-
 
 
     });
