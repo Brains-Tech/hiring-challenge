@@ -1,4 +1,3 @@
-
 import { Inter } from "next/font/google";
 import ClientLayout from "@/components/ClientLayout";
 
@@ -10,7 +9,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="pt-BR">
       <body className={inter.className}>
         <ClientLayout>{children}</ClientLayout>
       </body>

@@ -90,6 +90,16 @@ export class MaintenanceService {
             if (error instanceof QueryFailedError && error.message.includes("FOREIGN KEY")) {
                 throw new InvalidForeignKeyError("Invalid part ID");
             }
+
+            if (error instanceof QueryFailedError) {
+                throw new InvalidDataError("Invalid maintenance data");
+            }
+
+            if (error instanceof InvalidDataError) {
+                throw error;
+            }
+
+
             throw new InvalidDataError("Invalid maintenance data");
         }
     }

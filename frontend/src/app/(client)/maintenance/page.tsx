@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
-import { Table, Button, Modal, Form, message, Space } from "antd";
+import { useState, useEffect } from "react";
+import { Form } from "antd";
 import { useQuery } from "react-query";
 import {
   equipmentApi,
@@ -10,25 +10,11 @@ import {
   maintenanceApi,
   plantApi,
   partApi,
-  CreateUpdateMaintenanceDTO,
 } from "@/services/api";
-import {
-  PlusOutlined,
-  DeleteOutlined,
-  CalendarOutlined,
-  EditOutlined,
-} from "@ant-design/icons";
-import type { TableProps } from "antd";
-import dayjs from "dayjs";
+
 import { useSearchParams, useRouter } from "next/navigation";
-import { capitalize } from "@/utils/capitalize";
+
 import { ModalCreateUpdate } from "@/components/maintenance/ModalCreateUpdate";
-import {
-  sortString,
-  sortDate,
-  sortNestedString,
-  sortNestedDate,
-} from "@/utils/sorters";
 import { MaintenanceFilters } from "@/components/maintenance/MaintenanceFilters";
 import { useMaintenanceMutations } from "@/hooks/mutations/useMaintenanceMutations";
 import { MaintenanceTable } from "@/components/maintenance/MaintenanceTable";
